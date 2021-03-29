@@ -7,13 +7,12 @@
 			<headerTitle>
 				<ObjectPageDynamicHeaderTitle>
 					<expandedHeading>
-						<m:Title text="Mass Cost Maintenance" wrapping="true" class="sapUiSmallMarginEnd"/>
+						<m:Title text="Maintain Material List Cost" wrapping="true" class="sapUiSmallMarginEnd"/>
 					</expandedHeading>
 					<snappedHeading>
 						<m:FlexBox wrap="Wrap" fitContainer="true" alignItems="Center">
 							<m:FlexBox wrap="NoWrap" fitContainer="true" alignItems="Center" class="sapUiTinyMarginEnd">
-								<f:Avatar src="../../../../../../../{products>ProductPicUrl}" displaySize="S" displayShape="Square"/>
-								<m:Title text=" Maintaining Retail Pricing" wrapping="true" class="sapUiTinyMarginBegin sapUiTinyMarginEnd"/>
+								<m:Title text="Maintain Material List Cost" wrapping="true" class="sapUiTinyMarginBegin sapUiTinyMarginEnd"/>
 							</m:FlexBox>
 						</m:FlexBox>
 					</snappedHeading>

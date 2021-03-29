@@ -151,7 +151,7 @@ sap.ui.define([
 				conditionTable = this.getView().byId("Table");
 				sPath = jQuery.sap.getModulePath("ingles.mass.cost.mass_cost", "/test/data/createdata.json");
 				attModel = new JSONModel(sPath);
-				attModel.setDefaultBindingMode("OneWay");
+				// attModel.setDefaultBindingMode("OneWay");
 				this.getView().setModel(attModel);
 				conditionTable.bindRows("/Data");
 				attModel.refresh();
@@ -213,8 +213,8 @@ sap.ui.define([
 				var allowance = oRows[i].getCells()[4].getText();
 				calculated = ((parseFloat(retailprice, 2) - parseFloat(cost, 2)) / parseFloat(retailprice, 2)) * 100;
 				allowcalculated = ((parseFloat(retailprice, 2) - parseFloat(cost, 2) - parseFloat(allowance, 2) ) / parseFloat(retailprice, 2)) * 100;
-				finalcal = calculated.toFixed(2);
-				allowfinal = allowcalculated.toFixed(2);
+				finalcal = isNaN(calculated)? 0 : calculated.toFixed(2);
+				allowfinal = isNaN(allowcalculated)? 0 : allowcalculated.toFixed(2);
 				var check = oRows[i].getCells()[0].getItems()[1].getValue();
 				if (check === "") {
 					oRows[i].getCells()[8].setText("");
@@ -332,8 +332,8 @@ sap.ui.define([
 
 			var calculated = ((parseFloat(retailprice, 2) - parseFloat(cost, 2)) / parseFloat(retailprice, 2)) * 100;
 			var allowcalculated = ((parseFloat(retailprice, 2) - parseFloat(cost, 2) - parseFloat(allowance, 2)) / parseFloat(retailprice, 2)) * 100;
-			var finalcal = calculated.toFixed(2);
-			var finalallow = allowcalculated.toFixed(2);
+			var finalcal = isNaN(calculated) ? 0 : calculated.toFixed(2);
+			var finalallow = isNaN(allowcalculated) ? 0 : allowcalculated.toFixed(2);
 			if (oTable.getRows()[0].getCells()[0].getItems()[1].getValue() !== "") {
 				oTable.getRows()[row].getCells()[8].setText(finalcal);
 				oTable.getRows()[row].getCells()[9].setText(finalallow);
@@ -349,8 +349,8 @@ sap.ui.define([
 			var retailprice = oRows[row].getCells()[5].getText(); 
 			var calculated = ((parseFloat(retailprice, 2) - parseFloat(cost, 2)) / parseFloat(retailprice, 2)) * 100;
 			var calculatedallow = ((parseFloat(retailprice, 2) - parseFloat(cost, 2) - parseFloat(allowance, 2) ) / parseFloat(retailprice, 2)) * 100;
-			var finalcal = calculated.toFixed(2);
-			var finalallowcal = calculatedallow.toFixed(2);
+			var finalcal = isNaN(calculated)?0:calculated.toFixed(2);
+			var finalallowcal = isNaN(calculatedallow)?0:calculatedallow.toFixed(2);
 			oTable.getRows()[row].getCells()[8].setText(finalcal);
 			oTable.getRows()[row].getCells()[9].setText(finalallowcal);
 

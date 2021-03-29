@@ -33,67 +33,67 @@
 					<!--<Text text="{LocationCode}" wrapping="false"/>-->
 				</table:template>
 			</table:Column>
-			<table:Column name="Description" width="15rem" sortProperty="Description" filterProperty="Description" tooltip="Description">
+			<table:Column name="Description" sortProperty="Description" filterProperty="Description" tooltip="Description">
 				<Label text="Description"/>
 				<table:template>
 					<Text text="{Description}" wrapping="false"/>
 				</table:template>
 			</table:Column>
-			<table:Column name="Last_Cost" width="5rem" tooltip="Last Cost">
+			<table:Column name="Last_Cost" width="7rem" tooltip="Last Cost" hAlign="Right">
 				<Label text="Last Unit Cost" wrapping="true"/>
 				<table:template>
-					<Text text="{Last_Cost}" wrapping="false"/>
+					<Text text="{Last_Cost}" wrapping="false"  textAlign="Right" />
 				</table:template>
 			</table:Column>
-			<table:Column name="Allowance" width="4rem" tooltip="Allowance">
+			<table:Column name="Allowance" width="6rem" tooltip="Allowance" hAlign="Right">
 				<Label text="Allowance" wrapping="true" />
 				<table:template>
-					<Text text="{Allowance}" wrapping="false"/>
+					<Text text="{Allowance}" wrapping="false"  />
 				</table:template>
 			</table:Column>
-			<table:Column name="curr_retail" width="6rem" tooltip="Current Retail">
+			<table:Column name="curr_retail" width="7rem" tooltip="Current Retail" hAlign="Right">
 				<Label text="Current Retail" wrapping="true"/>
 				<table:template>
-					<Text text="{Price}" wrapping="false"/>
+					<Text text="{Price}" wrapping="false" />
 				</table:template>
 			</table:Column>
-			<table:Column name="curr_gp" width="6rem" tooltip="Current GP">
+			<table:Column name="curr_gp" width="7rem" tooltip="Current GP" hAlign="Right">
 				<Label text="Current GM %" wrapping="true"/>
 				<table:template>
-					<Text text="{Margin}" wrapping="false"/>
+					<Text text="{Margin}" wrapping="false" />
 				</table:template>
 			</table:Column>
 			<table:Column name="Price" width="8rem" tooltip="New Cost">
 				<Label text="New Cost"/>
 				<table:template>
 					<HBox>
-						<Input value="{Last_Cost}" width="4rem" editable="false" liveChange="livecalculate"/>
+						<Input value="{Last_Cost}" width="4rem" editable="false" liveChange="livecalculate"  textAlign="Right" />
 						<Button icon="sap-icon://reset" class="size1 sapUiTinyMarginBegin" press="onreset"/>
 					</HBox>
 				</table:template>
 			</table:Column>
-			<table:Column name="new_gp" width="6rem" tooltip="New GP">
+			<table:Column name="new_gp" width="6rem" tooltip="New GP" hAlign="Right">
 				<Label text="New GM %" wrapping="true"/>
 				<table:template>
-					<Text text="{allow}" wrapping="false"/>
+					<Text text="{allow}" wrapping="false" />
 				</table:template>
 			</table:Column>
-			<table:Column name="new_allow" width="6rem" tooltip="GM % w/eff. dte">
+			<table:Column name="new_allow" width="6rem" tooltip="GM % with allowance" hAlign="Right">
 				<Label text="GM % w/ Allowance" wrapping="true"/>
 				<table:template>
-					<Text text="{new_allow}" wrapping="false"/>
+					<Text text="{new_allow}" wrapping="false" />
 				</table:template>
 			</table:Column>
-			<table:Column name="Unit_sell" width="6rem" tooltip="Unit Sell" visible="false">
+			<table:Column name="Unit_sell" width="6rem" tooltip="Unit Sell" visible="false" hAlign="Right">
 				<Label text="Unit Sell"/>
 				<table:template>
-					<Text text="{Unit_sell}" wrapping="false"/>
+					<Text text="{Unit_sell}" wrapping="false"  />
 				</table:template>
 			</table:Column>
-			<table:Column name="Multiplier" width="6rem" tooltip="Multiplier" visible="false">
+			<table:Column name="Multiplier" width="6rem" tooltip="Multiplier" visible="false" hAlign="Right">
 				<Label text="Multiplier"/>
 				<table:template>
-					<Text text="{Multiplier}" wrapping="false"/>
+					<Text text="{Multiplier}" wrapping="false"  />
 				</table:template>
 			</table:Column>
 		</table:columns>
