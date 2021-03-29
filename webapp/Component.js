@@ -46,7 +46,13 @@ sap.ui.define([
 				};
 
 			return FlexibleColumnLayoutSemanticHelper.getInstanceFor(oFCL, oSettings);
-		}
+		},
+		destroy: function () {
+
+			sap.ui.core.UIComponent.prototype.destroy.apply(this, arguments);
+
+		}		
+		
 	});
 	return Component;
 });

@@ -144,7 +144,7 @@ sap.ui.define([
 				this.getView().byId("Ttitle").setText("Cost Maintenance (" + 9 + ")");
 				conditionTable.bindRows("/Data");
 				attModel.refresh();
-				this.getView().byId("Table").rerender();
+				// this.getView().byId("Table").rerender();
 				this.onfirstdisplay();
 			} else {
 
