@@ -212,7 +212,7 @@ sap.ui.define([
 				retailprice = oRows[i].getCells()[5].getText(); 
 				var allowance = oRows[i].getCells()[4].getText();
 				calculated = ((parseFloat(retailprice, 2) - parseFloat(cost, 2)) / parseFloat(retailprice, 2)) * 100;
-				allowcalculated = ((parseFloat(retailprice, 2) - parseFloat(cost, 2) - parseFloat(allowance, 2) ) / parseFloat(retailprice, 2)) * 100;
+				allowcalculated = ((parseFloat(retailprice, 2) - parseFloat(cost, 2) + parseFloat(allowance, 2) ) / parseFloat(retailprice, 2)) * 100;
 				finalcal = isNaN(calculated)? 0 : calculated.toFixed(2);
 				allowfinal = isNaN(allowcalculated)? 0 : allowcalculated.toFixed(2);
 				var check = oRows[i].getCells()[0].getItems()[1].getValue();
@@ -331,7 +331,7 @@ sap.ui.define([
 			var allowance = oRows[row].getCells()[4].getText();
 
 			var calculated = ((parseFloat(retailprice, 2) - parseFloat(cost, 2)) / parseFloat(retailprice, 2)) * 100;
-			var allowcalculated = ((parseFloat(retailprice, 2) - parseFloat(cost, 2) - parseFloat(allowance, 2)) / parseFloat(retailprice, 2)) * 100;
+			var allowcalculated = ((parseFloat(retailprice, 2) - parseFloat(cost, 2) + parseFloat(allowance, 2)) / parseFloat(retailprice, 2)) * 100;
 			var finalcal = isNaN(calculated) ? 0 : calculated.toFixed(2);
 			var finalallow = isNaN(allowcalculated) ? 0 : allowcalculated.toFixed(2);
 			if (oTable.getRows()[0].getCells()[0].getItems()[1].getValue() !== "") {
@@ -348,7 +348,7 @@ sap.ui.define([
 			var allowance = oRows[row].getCells()[4].getText();
 			var retailprice = oRows[row].getCells()[5].getText(); 
 			var calculated = ((parseFloat(retailprice, 2) - parseFloat(cost, 2)) / parseFloat(retailprice, 2)) * 100;
-			var calculatedallow = ((parseFloat(retailprice, 2) - parseFloat(cost, 2) - parseFloat(allowance, 2) ) / parseFloat(retailprice, 2)) * 100;
+			var calculatedallow = ((parseFloat(retailprice, 2) - parseFloat(cost, 2) + parseFloat(allowance, 2) ) / parseFloat(retailprice, 2)) * 100;
 			var finalcal = isNaN(calculated)?0:calculated.toFixed(2);
 			var finalallowcal = isNaN(calculatedallow)?0:calculatedallow.toFixed(2);
 			oTable.getRows()[row].getCells()[8].setText(finalcal);

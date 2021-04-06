@@ -11,17 +11,18 @@ sap.ui.define([
 	"sap/m/ColumnListItem",
 	"sap/m/Label",
 	"sap/m/SearchField",
-	"sap/m/Token"
+	"sap/m/Token",
+	"ingles/mass/cost/mass_cost/controller/ValueHelper"	
 ], function (JSONModel, Controller, Filter, FilterOperator, Sorter, MessageBox, UriParameters, compLibrary, typeString, ColumnListItem,
-	Label, SearchField, Token) {
+	Label, SearchField, Token, ValueHelper) {
 	"use strict";
 
 	return Controller.extend("ingles.mass.cost.mass_cost.controller.Master", {
 		onInit: function () {
 			this.oRouter = this.getOwnerComponent().getRouter();
 			this._bDescendingSort = false;
-			this._oMultiInput = this.getView().byId("multiInput");
-			this._oMultiInput.addValidator(this._onMultiInputValidate);
+			this._oMultiInput = this.getView().byId("VendorInput");
+			// this._oMultiInput.addValidator(this._onMultiInputValidate);
 			this._oMultiInput.setTokens(this._getDefaultTokens());
 			var scPath = jQuery.sap.getModulePath("ingles.mass.cost.mass_cost", "/test/data/columnsModel.json");
 			this.oColModel = new JSONModel(scPath);
@@ -30,6 +31,9 @@ sap.ui.define([
 			this.getView().setModel(this.oProductsModel);
 
 			this.oRouter.getRoute("notFound").attachPatternMatched(this._getQuery, this);
+			
+			this._vendorValueHelp = new ValueHelper(this, 'VENDOR');
+			
 		},
 		_getQuery: function (oEvent) {
 
@@ -66,23 +70,10 @@ sap.ui.define([
 			return null;
 		},
 		_getDefaultTokens: function () {
-			var ValueHelpRangeOperation = compLibrary.valuehelpdialog.ValueHelpRangeOperation;
 			var oToken1 = new Token({
-				key: "1002",
-				text: "1002"
+				key: "DC10",
+				text: "DC10"
 			});
-
-			var oToken2 = new Token({
-				key: "range_0",
-				text: "!(=HT-1000)"
-			}).data("range", {
-				"exclude": true,
-				"operation": ValueHelpRangeOperation.EQ,
-				"keyField": "ProductId",
-				"value1": "HT-1000",
-				"value2": ""
-			});
-
 			return [oToken1];
 		},
 		onListItemPress: function (oEvent) {
@@ -204,6 +195,44 @@ sap.ui.define([
 
 			return obj;
 		},
+		
+		onVendorValueHelp: function (oEvent) {
+			this._vendorValueHelp.openValueHelp(oEvent);
+		},	
+		
+		tokenUpdate: function (oEvent, oPath) {
+			var sType = oEvent.getParameter("type"),
+				aAddedTokens = oEvent.getParameter("addedTokens"),
+				aRemovedTokens = oEvent.getParameter("removedTokens"),
+				oModel = this.getView().getModel("appControl"),
+				aContexts = oModel.getProperty(oPath);
+
+			switch (sType) {
+				// add new context to the data of the model, when new token is being added
+			case "added":
+				aAddedTokens.forEach(function (oToken) {
+					aContexts.push({
+						key: oToken.getKey(),
+						text: oToken.getKey()
+					});
+				});
+				break;
+				// remove contexts from the data of the model, when tokens are being removed
+			case "removed":
+				aRemovedTokens.forEach(function (oToken) {
+					aContexts = aContexts.filter(function (oContext) {
+						return oContext.key !== oToken.getKey();
+					});
+				});
+				break;
+			default:
+				break;
+			}
+
+			oModel.setProperty(oPath, aContexts);
+
+		},		
+		
 		onValueHelpRequested: function () {
 			var aCols = this.oColModel.getData().cols;
 			this._oBasicSearchField = new SearchField({
