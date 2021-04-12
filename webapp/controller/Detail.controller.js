@@ -136,26 +136,23 @@ sap.ui.define([
 			var mode = this.getOwnerComponent().getModel("query").getProperty("/Mode");
 			var file = this.getOwnerComponent().getModel("query").getProperty("/filename");
 			if (mode === "02") {
+				this.getView().getModel("appControl").setProperty("/FilterInput/Edit", false);
 				var conditionTable = this.getView().byId("Table");
 				var sPath = jQuery.sap.getModulePath("ingles.mass.cost.mass_cost", "/test/data/" + file);
 				var attModel = new JSONModel(sPath);
-				attModel.setDefaultBindingMode("OneWay");
 				this.getView().setModel(attModel);
 				this.getView().byId("Ttitle").setText("Cost Maintenance (" + 9 + ")");
 				conditionTable.bindRows("/Data");
 				attModel.refresh();
-				// this.getView().byId("Table").rerender();
 				this.onfirstdisplay();
 			} else {
-
+				this.getView().getModel("appControl").setProperty("/FilterInput/Edit", true);
 				conditionTable = this.getView().byId("Table");
 				sPath = jQuery.sap.getModulePath("ingles.mass.cost.mass_cost", "/test/data/createdata.json");
 				attModel = new JSONModel(sPath);
-				// attModel.setDefaultBindingMode("OneWay");
 				this.getView().setModel(attModel);
 				conditionTable.bindRows("/Data");
 				attModel.refresh();
-				this.getView().byId("Table").rerender();
 				this.getView().byId("Ttitle").setText("Cost Maintenance (" + 0 + ")");
 				this.getView().byId("Table").setVisibleRowCount(9);
 				this.geteditrows(0, 9);
@@ -180,7 +177,7 @@ sap.ui.define([
 		},
 		onfirstdisplay: function (oEvent) {
 
-			var oTable = this.getView().byId("Table");
+/*			var oTable = this.getView().byId("Table");
 			var oRows = oTable.getRows();
 			for (var i = 0; i < oRows.length; i++) {
 				// var oCell = oRows[i].getCells()[4];
@@ -195,7 +192,7 @@ sap.ui.define([
 				// oCell.setProperty("editable", false);
 				oCell = oRows[i].getCells()[7];
 				oCell.getItems()[0].setProperty("editable", false);
-			}
+			}*/
 			this.onEditAction();
 
 			var that = this;
@@ -206,22 +203,38 @@ sap.ui.define([
 		firstcalculate: function () {
 			var oTable = this.getView().byId("Table");
 			var oRows = oTable.getRows(),
-				cost, retailprice, calculated, finalcal,allowcalculated,allowfinal;
+				cost, allow, retailprice, GM, finalGM, GMwithAllow, finalGMwithAllow;
+				
+			var oModel = this.getView().getModel();
+			var sPath = "";
+				
 			for (var i = 0; i < oRows.length; i++) {
-				cost = oRows[i].getCells()[3].getText();
+/*				cost = oRows[i].getCells()[3].getText();
 				retailprice = oRows[i].getCells()[5].getText(); 
-				var allowance = oRows[i].getCells()[4].getText();
-				calculated = ((parseFloat(retailprice, 2) - parseFloat(cost, 2)) / parseFloat(retailprice, 2)) * 100;
-				allowcalculated = ((parseFloat(retailprice, 2) - parseFloat(cost, 2) + parseFloat(allowance, 2) ) / parseFloat(retailprice, 2)) * 100;
-				finalcal = isNaN(calculated)? 0 : calculated.toFixed(2);
-				allowfinal = isNaN(allowcalculated)? 0 : allowcalculated.toFixed(2);
+				var allowance = oRows[i].getCells()[4].getText();*/
+				
+				sPath = "/Data/" + i;
+				cost = oModel.getProperty(sPath + "/Cost");
+				allow = oModel.getProperty(sPath + "/Allowance");
+				retailprice = oModel.getProperty(sPath + "/Price");
+
+				GM = ((parseFloat(retailprice, 2) - parseFloat(cost, 2)) / parseFloat(retailprice, 2)) * 100;
+				finalGM = isNaN(GM) ? 0 : GM.toFixed(2);
+
+				GMwithAllow = ((parseFloat(retailprice, 2) - parseFloat(cost, 2) + parseFloat(allow, 2)) / parseFloat(retailprice, 2)) * 100;
+				finalGMwithAllow = isNaN(GMwithAllow) ? 0 : GMwithAllow.toFixed(2);
+
 				var check = oRows[i].getCells()[0].getItems()[1].getValue();
 				if (check === "") {
-					oRows[i].getCells()[8].setText("");
-					oRows[i].getCells()[9].setText("");
+					// oRows[i].getCells()[8].setText("");
+					// oRows[i].getCells()[9].setText("");
+					oModel.setProperty(sPath + "/allow", "");
+					oModel.setProperty(sPath + "/new_allow", "");
 				} else {
-					oRows[i].getCells()[8].setText(finalcal);
-					oRows[i].getCells()[9].setText(allowfinal);
+					// oRows[i].getCells()[8].setText(finalGM);
+					// oRows[i].getCells()[9].setText(finalGMwithAllow);
+					oModel.setProperty(sPath + "/allow", finalGM);
+					oModel.setProperty(sPath + "/new_allow", finalGMwithAllow);
 				}
 
 			}
@@ -233,151 +246,188 @@ sap.ui.define([
 				var selection = this.getOwnerComponent().getModel("query").getProperty("/PriceFamily").getKey();
 			}
 
-			var oTable = this.getView().byId("Table");
-			var oRows = oTable.getRows();
-			for (var i = 0; i < oRows.length; i++) {
-				// var oCell = oRows[i].getCells()[4];
-				// oCell.setProperty("editable", true);
-				// oCell = oRows[i].getCells()[5];
-				// var oCell.setProperty("editable", true);
-				if (selection !== "0000") {
-					var oCell = oRows[i].getCells()[0].getItems()[1];
-					oCell.setProperty("editable", false);
-					oCell = oRows[i].getCells()[1];
-					oCell.setProperty("editable", false);
-				} else {
-					oCell = oRows[i].getCells()[0].getItems()[1];
-					oCell.setProperty("editable", true);
-					oCell = oRows[i].getCells()[1];
-					oCell.setProperty("editable", true);
-				}
-				// oCell = oRows[i].getCells()[4];
-				// oCell.setProperty("editable", false);
-				oCell = oRows[i].getCells()[7];
-				oCell.getItems()[0].setProperty("editable", true);
-			}
+			// var oTable = this.getView().byId("Table");
+			// var oRows = oTable.getRows();
+			// for (var i = 0; i < oRows.length; i++) {
+			// 	// var oCell = oRows[i].getCells()[4];
+			// 	// oCell.setProperty("editable", true);
+			// 	// oCell = oRows[i].getCells()[5];
+			// 	// var oCell.setProperty("editable", true);
+			// 	if (selection !== "0000") {
+			// 		var oCell = oRows[i].getCells()[0].getItems()[1];
+			// 		oCell.setProperty("editable", false);
+			// 		oCell = oRows[i].getCells()[1];
+			// 		oCell.setProperty("editable", false);
+			// 	} else {
+			// 		oCell = oRows[i].getCells()[0].getItems()[1];
+			// 		oCell.setProperty("editable", true);
+			// 		oCell = oRows[i].getCells()[1];
+			// 		oCell.setProperty("editable", true);
+			// 	}
+			// 	// oCell = oRows[i].getCells()[4];
+			// 	// oCell.setProperty("editable", false);
+			// 	oCell = oRows[i].getCells()[7];
+			// 	oCell.getItems()[0].setProperty("editable", true);
+			// }
+			
+			this.getView().getModel("appControl").setProperty("/FilterInput/Edit", true);
+			
 			this.onEditAction();
 		},
 		seteditrowsdisble: function () {
-			var oTable = this.getView().byId("Table");
-			var oRows = oTable.getRows();
-			for (var i = 0; i < oRows.length; i++) {
-				// var oCell = oRows[i].getCells()[4];
-				// oCell.setProperty("editable", true);
-				// oCell = oRows[i].getCells()[5];
-				// oCell.setProperty("editable", true);
-				var oCell = oRows[i].getCells()[0].getItems()[1];
-				oCell.setProperty("editable", false);
-				oCell = oRows[i].getCells()[1];
-				oCell.setProperty("editable", false);
-				// oCell = oRows[i].getCells()[4];
-				// oCell.setProperty("editable", false);
-				oCell = oRows[i].getCells()[7];
-				oCell.getItems()[0].setProperty("editable", true);
-			}
+			// var oTable = this.getView().byId("Table");
+			// var oRows = oTable.getRows();
+			// for (var i = 0; i < oRows.length; i++) {
+			// 	// var oCell = oRows[i].getCells()[4];
+			// 	// oCell.setProperty("editable", true);
+			// 	// oCell = oRows[i].getCells()[5];
+			// 	// oCell.setProperty("editable", true);
+			// 	var oCell = oRows[i].getCells()[0].getItems()[1];
+			// 	oCell.setProperty("editable", false);
+			// 	oCell = oRows[i].getCells()[1];
+			// 	oCell.setProperty("editable", false);
+			// 	// oCell = oRows[i].getCells()[4];
+			// 	// oCell.setProperty("editable", false);
+			// 	oCell = oRows[i].getCells()[7];
+			// 	oCell.getItems()[0].setProperty("editable", true);
+			// }
 		},
 		seteditcreate: function () {
-			var oTable = this.getView().byId("Table");
-			var oRows = oTable.getRows();
-			for (var i = 0; i < oRows.length; i++) {
-				// var oCell = oRows[i].getCells()[4];
-				// oCell.setProperty("editable", true);
-				// oCell = oRows[i].getCells()[5];
-				// oCell.setProperty("editable", true);
-				var oCell = oRows[i].getCells()[0].getItems()[1];
-				oCell.setProperty("editable", true);
-				oCell = oRows[i].getCells()[1];
-				oCell.setProperty("editable", true);
-				// oCell = oRows[i].getCells()[4];
-				// oCell.setProperty("editable", true);
-				oCell = oRows[i].getCells()[7];
-				oCell.getItems()[0].setProperty("editable", true);
-			}
+			// var oTable = this.getView().byId("Table");
+			// var oRows = oTable.getRows();
+			// for (var i = 0; i < oRows.length; i++) {
+			// 	// var oCell = oRows[i].getCells()[4];
+			// 	// oCell.setProperty("editable", true);
+			// 	// oCell = oRows[i].getCells()[5];
+			// 	// oCell.setProperty("editable", true);
+			// 	var oCell = oRows[i].getCells()[0].getItems()[1];
+			// 	oCell.setProperty("editable", true);
+			// 	oCell = oRows[i].getCells()[1];
+			// 	oCell.setProperty("editable", true);
+			// 	// oCell = oRows[i].getCells()[4];
+			// 	// oCell.setProperty("editable", true);
+			// 	oCell = oRows[i].getCells()[7];
+			// 	oCell.getItems()[0].setProperty("editable", true);
+			// }
 			this.onEditAction();
 		},
 		geteditrows: function (start, end) {
-			var oTable = this.getView().byId("Table");
-			var oRows = oTable.getRows();
-			for (var i = start; i < end; i++) {
-				// var oCell = oRows[i].getCells()[4];
-				// oCell.setProperty("editable", true);
-				// oCell = oRows[i].getCells()[5];
-				// oCell.setProperty("editable", true);
-				var oCell = oRows[i].getCells()[0].getItems()[1];
-				oCell.setProperty("editable", true);
-				oCell = oRows[i].getCells()[1];
-				oCell.setProperty("editable", true);
-				// oCell = oRows[i].getCells()[4];
-				// oCell.setProperty("editable", true);
-				oCell = oRows[i].getCells()[7];
-				oCell.getItems()[0].setProperty("editable", true);
-			}
+			// var oTable = this.getView().byId("Table");
+			// var oRows = oTable.getRows();
+			// for (var i = start; i < end; i++) {
+			// 	// var oCell = oRows[i].getCells()[4];
+			// 	// oCell.setProperty("editable", true);
+			// 	// oCell = oRows[i].getCells()[5];
+			// 	// oCell.setProperty("editable", true);
+			// 	var oCell = oRows[i].getCells()[0].getItems()[1];
+			// 	oCell.setProperty("editable", true);
+			// 	oCell = oRows[i].getCells()[1];
+			// 	oCell.setProperty("editable", true);
+			// 	// oCell = oRows[i].getCells()[4];
+			// 	// oCell.setProperty("editable", true);
+			// 	oCell = oRows[i].getCells()[7];
+			// 	oCell.getItems()[0].setProperty("editable", true);
+			// }
 			this.onEditAction();
 		},
-
 		onreset: function (oEvent) {
+			var oModel = this.getView().getModel();
 			var path = oEvent.getSource().getParent().getParent().getBindingContext().getPath();
-			var data = this.getView().getModel().getProperty(path + "/Last_Cost");
-			oEvent.getSource().getParent().getItems()[0].setValue(data);
+			var oldValue = oModel.getProperty( path + "/Last_Cost");
+			oModel.setProperty( path + "/Cost", oldValue );
+
 			var table = this.getView().byId("Table");
 			var oRow = oEvent.getSource().getParent().getParent().getBindingContext().getPath().slice(6);
 			this.calculate(oRow, table);
 			table.removeSelectionInterval(oRow, oRow);
 		},
 		calculate: function (row, oTable) {
-			var oRows = oTable.getRows();
-			var cost = oRows[row].getCells()[3].getText();
-			var retailprice = oRows[row].getCells()[5].getText(); 
-			var allowance = oRows[row].getCells()[4].getText();
+			// var oRows = oTable.getRows();
+			// var cost = oRows[row].getCells()[3].getText();
+			// var retailprice = oRows[row].getCells()[5].getText(); 
+			// var allowance = oRows[row].getCells()[4].getText();
 
-			var calculated = ((parseFloat(retailprice, 2) - parseFloat(cost, 2)) / parseFloat(retailprice, 2)) * 100;
-			var allowcalculated = ((parseFloat(retailprice, 2) - parseFloat(cost, 2) + parseFloat(allowance, 2)) / parseFloat(retailprice, 2)) * 100;
-			var finalcal = isNaN(calculated) ? 0 : calculated.toFixed(2);
-			var finalallow = isNaN(allowcalculated) ? 0 : allowcalculated.toFixed(2);
+			var oModel = this.getView().getModel(),
+				sPath = "/Data/" + row;
+			var cost = oModel.getProperty(sPath + "/Cost");
+			var allow = oModel.getProperty(sPath + "/Allowance");
+			var retailprice = oModel.getProperty(sPath + "/Price");
+
+			var GM = ((parseFloat(retailprice, 2) - parseFloat(cost, 2)) / parseFloat(retailprice, 2)) * 100;
+			var finalGM = isNaN(GM) ? 0 : GM.toFixed(2);
+
+			var GMwithAllow = ((parseFloat(retailprice, 2) - parseFloat(cost, 2) + parseFloat(allow, 2)) / parseFloat(retailprice, 2)) * 100;
+			var finalGMwithAllow = isNaN(GMwithAllow) ? 0 : GMwithAllow.toFixed(2);
+
 			if (oTable.getRows()[0].getCells()[0].getItems()[1].getValue() !== "") {
-				oTable.getRows()[row].getCells()[8].setText(finalcal);
-				oTable.getRows()[row].getCells()[9].setText(finalallow);
+				// oTable.getRows()[row].getCells()[8].setText(finalGM);
+				// oTable.getRows()[row].getCells()[9].setText(finalGMwithAllow);
+				oModel.setProperty(sPath + "/allow", finalGM);
+				oModel.setProperty(sPath + "/new_allow", finalGMwithAllow);
 			}
 
 		},
 		livecalculate: function (oEvent) {
 			var oTable = this.getView().byId("Table");
 			var row = oEvent.getSource().getParent().getParent().getBindingContext().getPath().slice(6);
-			var oRows = oTable.getRows();
-			var cost = oRows[row].getCells()[7].getItems()[0].getValue();
-			var allowance = oRows[row].getCells()[4].getText();
-			var retailprice = oRows[row].getCells()[5].getText(); 
-			var calculated = ((parseFloat(retailprice, 2) - parseFloat(cost, 2)) / parseFloat(retailprice, 2)) * 100;
-			var calculatedallow = ((parseFloat(retailprice, 2) - parseFloat(cost, 2) + parseFloat(allowance, 2) ) / parseFloat(retailprice, 2)) * 100;
-			var finalcal = isNaN(calculated)?0:calculated.toFixed(2);
-			var finalallowcal = isNaN(calculatedallow)?0:calculatedallow.toFixed(2);
-			oTable.getRows()[row].getCells()[8].setText(finalcal);
-			oTable.getRows()[row].getCells()[9].setText(finalallowcal);
+			// var oRows = oTable.getRows();
+			// var cost = oRows[row].getCells()[3].getText();
+			// var allow = oRows[row].getCells()[4].getText();
+			// var retailprice = oRows[row].getCells()[7].getItems()[0].getValue();
+			var oModel = this.getView().getModel();
+			var sPath = oEvent.getSource().getBindingContext().getPath();
+			var retailprice = oModel.getProperty(sPath + "/Price");
+			var allow = oModel.getProperty(sPath + "/Allowance");
+			var cost = oEvent.getSource().getValue(); //oModel.getProperty( sPath + "/Price" );
+
+			var GM = ((parseFloat(retailprice, 2) - parseFloat(cost, 2)) / parseFloat(retailprice, 2)) * 100;
+			var finalGM = isNaN(GM) ? 0 : GM.toFixed(2);
+
+			var GMwithAllow = ((parseFloat(retailprice, 2) - parseFloat(cost, 2) + parseFloat(allow, 2)) / parseFloat(retailprice, 2)) * 100;
+			var finalGMwithAllow = isNaN(GMwithAllow) ? 0 : GMwithAllow.toFixed(2);
+
+			// oTable.getRows()[row].getCells()[8].setText(finalGM);
+			// oTable.getRows()[row].getCells()[9].setText(finalGMwithAllow);
+			oModel.setProperty(sPath + "/allow", finalGM);
+			oModel.setProperty(sPath + "/new_allow", finalGMwithAllow);
 
 			oTable.addSelectionInterval(row, row);
 		},
 		onDeletePress: function (oEvent) {
-			var itemModel = this.getView().getModel(),
-				oRow = oEvent.getParameter("row"),
-				sIndex = oRow.getBindingContext().sPath.split("/")[2];
+			// var itemModel = this.getView().getModel(),
+			// 	oRow = oEvent.getParameter("row"),
+			// 	sIndex = oRow.getBindingContext().sPath.split("/")[2];
+			// itemModel.getData().Data.splice(sIndex, 1);
+			// itemModel.refresh();
 
-			itemModel.getData().Data.splice(sIndex, 1);
+			var itemModel = this.getView().byId("Table").getModel();
+			var oTable = this.getView().byId("Table");
+			var indices = oTable.getSelectedIndices();
+			if (indices.length === 0) {
+				MessageToast.show("Select atleast one row");
+				return;
+			}
+			indices.sort(function (a, b) {
+				return b - a;
+			});
+			for (var i = 0; i < indices.length; i++) {
+				itemModel.getData().Data.splice(indices[i], 1);
+			}
 			itemModel.refresh();
 
-			this.getView().byId("Ttitle").setText("Cost Maintenance (" + itemModel.getData().Data.length + ")");
+			this.getView().byId("Ttitle").setText("Retail Pricing (" + itemModel.getData().Data.length + ")");
 		},
 		onEditAction: function (oEvent) {
 			this.getView().byId("Tfilter").setVisible(true);
-			this.getView().byId("Treset").setVisible(true);
 			this.getView().byId("Tcreate").setVisible(true);
 			this.getView().byId("RB1").setEnabled(true);
 			this.getView().byId("RB2").setEnabled(true);
-			//this.getView().byId("BCopy").setVisible(true);
 			this.getView().byId("Bactive").setVisible(true);
 			this.getView().byId("Bsave").setVisible(true);
 			this.getView().byId("UploadCollection").setUploadButtonInvisible(false);
 			this.getView().byId("UploadCollection").setUploadEnabled(true);
 		},
+		
 		onAddDialogSubmit: function (oEvent) {
 			this.addRowsDialog.close();
 			this.addRowsDialog.destroy();
@@ -460,7 +510,7 @@ sap.ui.define([
 		onsave: function (oEvent) {
 			sap.ui.getCore().getMessageManager().removeAllMessages();
 			this.addMessageToTarget("", "", "SAP Price document number 45789 created successfully!!", "Success",
-				"UPC: 4141030751 Material: 22220  Successfully posted",
+				"",
 				"S", "");
 
 			//this.addMessageToTarget("", "", "Please enter valid Price", "Error", "Please check the Price at Row 2", "E", "");
@@ -669,6 +719,65 @@ sap.ui.define([
 				"items": aItems
 			});
 			this.byId("attachmentTitle").setText(this.getAttachmentTitleText());
-		}
+		},
+		onMaterialInput: function (oEvent) {
+			var matnr = oEvent.getSource().getValue();
+			var sPath = oEvent.getSource().getBindingContext().getPath();
+			var data = [{
+				LocationCode: "1005",
+				Material: "22220",
+				Vendor: "909991",
+				Description: "JFG MAYONNAISE",
+				valid_from: "5/2/2021",
+				valid_to: "12/31/9999",
+				Last_Cost: "2.52",
+				Margin: "23.17",
+				   Price: "3.28",
+				Unit_sell: "3.28",
+				Multiplier: "1",
+				UPC: "4141030751",
+				Color: "#40916C",
+				Allowance: "0.27"
+			}, {
+				LocationCode: "1005",
+				Material: "22233",
+				Vendor: "909991",
+				Description: "JFG SALAD DRESSING",
+				valid_from: "5/2/2021",
+				valid_to: "12/31/9999",
+				Last_Cost: "2.52",
+				Margin: "23.27",
+				 Price: "3.98",
+				Unit_sell: "3.28",
+				Multiplier: "1",
+				UPC: "4141030753",
+				Color: "#40916C",
+				Allowance: "0.00"
+			}, {
+				LocationCode: "1005",
+				Material: "22446",
+				Vendor: "909991",
+				Description: "MARZETTI LT.SLAW DRESSING",
+				valid_from: "5/2/2021",
+				valid_to: "12/31/9999",
+				Last_Cost: "2.52",
+				Margin: "30.15",
+				   Price: "3.98",
+				Unit_sell: "3.98",
+				Multiplier: "1",
+				UPC: "7020031001",
+				Color: "#40916C",
+				Allowance: "0.00"
+			}];
+
+			var selected = data.filter(function (obj) {
+				return obj.Material === matnr;
+			});
+			if (selected.length > 0) {
+				this.getView().getModel().setProperty(sPath, selected[0]);
+			}
+
+		}		
+		
 	});
 });
