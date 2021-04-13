@@ -7,8 +7,9 @@
 				<Title id="Ttitle" text="Retail Pricing (9)"/>
 				<ToolbarSpacer/>
 				<!--<Button id="BCopy" icon="sap-icon://copy" text="Copy" type="Transparent" visible="false"/>-->
-				<Button id="Tcreate" icon="sap-icon://add" tooltip="Add new rows" press="onAddRows" visible="false"></Button>				
-				<Button id="Tfilter" icon="sap-icon://less" tooltip="Delete" visible="false" press="onDeletePress"/>    <!--press="clearAllFilters"-->
+				<Button id="AddRowBtn" icon="sap-icon://add" tooltip="Add new rows" press="onAddRows" visible="{appControl>/FilterInput/Edit}"></Button>				
+				<Button id="DelRowBtn" icon="sap-icon://less" tooltip="Delete" visible="{appControl>/FilterInput/Edit}" press="onDeletePress"/> 
+				<Button id="ShowFamilyBtn" icon="sap-icon://SAP-icons-TNT/bdd-diagram" tooltip="Display Cost Family" press="showFamilyInfo"/> 
 				<Button id="Treset" icon="sap-icon://synchronize" tooltip="Synchronize Data" press="onSync" width="auto" visible="{=((${query>/Mode} === '01') ? false : true)}"/>	
 			</Toolbar>
 		</table:toolbar>
@@ -20,8 +21,11 @@
 				<Label text="Material"/>
 				<table:template>
 					<HBox>
-						<core:Icon src="sap-icon://color-fill" class="size1 sapUiTinyMarginTop sapUiTinyMarginEnd" color="{Color}" visible="true"></core:Icon>
-						<Input value="{Material}" editable="{appControl>/FilterInput/Edit}" submit="onMaterialInput"/>
+						<core:Icon src="sap-icon://color-fill" class="size1 sapUiTinyMarginTop sapUiTinyMarginEnd" 
+						color="{ parts: [{path: 'IsParent'}, {path: 'Family'}, {path: 'Material'}],	formatter: '.colorCode'	}"
+						visible="true"></core:Icon>
+						<Input value="{Material}" editable="{ parts: [{path: 'appControl>/FilterInput/Edit'}, {path: 'IsNew'}],	formatter: '.editability' }"
+						submit="onMaterialInput"/>
 						<!--<Text text="{Material}" wrapping="false"/>-->
 					</HBox>
 				</table:template>
@@ -29,7 +33,7 @@
 			<table:Column name="UPC" width="8rem" sortProperty="UPC" filterProperty="UPC" tooltip="UPC">
 				<Label text="UPC"/>
 				<table:template>
-						<Input value="{UPC}" editable="{appControl>/FilterInput/Edit}"/>
+						<Input value="{UPC}" editable="{ parts: [{path: 'appControl>/FilterInput/Edit'}, {path: 'IsNew'}],	formatter: '.editability' }"/>
 					<!--<Text text="{LocationCode}" wrapping="false"/>-->
 				</table:template>
 			</table:Column>
@@ -39,10 +43,22 @@
 					<Text text="{Description}" wrapping="false"/>
 				</table:template>
 			</table:Column>
+			<table:Column name="Vendor" width="5rem" tooltip="Vendor" hAlign="Center">
+				<Label text="Vendor #" wrapping="true"/>
+				<table:template>
+					<Text text="{Vendor}" wrapping="false"/>
+				</table:template>
+			</table:Column>
+			<table:Column name="Vendor_desc" width="10rem" tooltip="Vendor Name">
+				<Label text="Vendor Name" wrapping="false"/>
+				<table:template>
+					<Text text="{Vendor_desc}" wrapping="false"/>
+				</table:template>
+			</table:Column>		
 			<table:Column name="curr_retail" width="7rem" tooltip="Current Retail" hAlign="Right" >
 				<Label text="Current Retail" wrapping="true"/>
 				<table:template>
-					<Text text="{Price}" wrapping="false" />
+					<Text text="{RetailPrice}" wrapping="false" />
 				</table:template>
 			</table:Column>			
 			<table:Column name="Allowance" width="6rem" tooltip="Allowance" hAlign="Right">
@@ -54,7 +70,7 @@
 			<table:Column name="Last_Cost" width="7rem" tooltip="Last Cost" hAlign="Right" visible="{=((${query>/Mode} === '01') ? false : true)}">
 				<Label text="Last Unit Cost" wrapping="true"/>
 				<table:template>
-					<Text text="{Last_Cost}" wrapping="false"  textAlign="Right" />
+					<Text text="{effcost}" wrapping="false"  textAlign="Right" />
 				</table:template>
 			</table:Column>
 			<table:Column name="curr_gp" width="7rem" tooltip="Current GP" hAlign="Right" visible="{=((${query>/Mode} === '01') ? false : true)}">
@@ -63,19 +79,19 @@
 					<Text text="{Margin}" wrapping="false" />
 				</table:template>
 			</table:Column>
-			<table:Column name="Price" width="8rem" tooltip="New Cost">
+			<table:Column name="Cost" width="8rem" tooltip="New Cost">
 				<Label text="New Cost"/>
 				<table:template>
 					<HBox>
 						<Input value="{
 							parts: [
-								{path: 'Cost'},
+								{path: 'New_Cost'},
 								{path: 'appControl>/Currency'}
 							],
 							type: 'sap.ui.model.type.Currency',
 							formatOptions: {showMeasure: false}
 						}" 
-						editable="{appControl>/FilterInput/Edit}" 
+						editable="{appControl>/FilterInput/Edit}"
 						textAlign = "Right"
 						liveChange="livecalculate"/>
 						<Button icon="sap-icon://reset" class="size1 sapUiTinyMarginBegin" press="onreset"/>
@@ -85,13 +101,13 @@
 			<table:Column name="new_gp" width="6rem" tooltip="New GP" hAlign="Right">
 				<Label text="New GM %" wrapping="true"/>
 				<table:template>
-					<Text text="{allow}" wrapping="false" />
+					<Text text="{gm}" wrapping="false" />
 				</table:template>
 			</table:Column>
 			<table:Column name="new_allow" width="6rem" tooltip="GM % with allowance" hAlign="Right">
 				<Label text="GM % w/ Allowance" wrapping="true"/>
 				<table:template>
-					<Text text="{new_allow}" wrapping="false" />
+					<Text text="{gmallow}" wrapping="false" />
 				</table:template>
 			</table:Column>
 			<table:Column name="Unit_sell" width="6rem" tooltip="Unit Sell" visible="false" hAlign="Right">

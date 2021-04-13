@@ -34,6 +34,7 @@ sap.ui.define([
 		appControlModel: function () {
 			var appData = {
 				Currency: "USD",
+				EditMode: false,
 				FilterInput: {
 					Vendor: "",
 					Mode: 0,

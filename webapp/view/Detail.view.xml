@@ -26,7 +26,7 @@
 					</navigationActions>
 					<actions>
 						<!--<m:Button id="BUpload" icon="sap-icon://upload" text="Upload" type="Transparent" visible="false"/>-->
-						<m:Button icon="sap-icon://edit" text="Edit" type="Emphasized" press="onEdit"/>
+						<m:Button icon="sap-icon://edit" text="Edit" type="Emphasized" press="onEdit" visible="{=((${appControl>/FilterInput/Edit} === true) ? false : true)}"/>
 					</actions>
 				</ObjectPageDynamicHeaderTitle>
 			</headerTitle>
