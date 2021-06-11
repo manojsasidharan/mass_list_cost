@@ -11,16 +11,16 @@ sap.ui.define([
 			oModel.setDefaultBindingMode("OneWay");
 			return oModel;
 		},
-		oViewModel: function() {
+		oViewModel: function () {
 			var vModel = new JSONModel({
-				"data" : [{
+				"data": [{
 					"row": "1"
 				}]
 			});
 			vModel.setDefaultBindingMode("TwoWay");
 			return vModel;
 		},
-		onewModel: function(){
+		onewModel: function () {
 			var queryData = {
 				"PriceStrategy": "",
 				"PriceType": "",
@@ -35,6 +35,46 @@ sap.ui.define([
 			var appData = {
 				Currency: "USD",
 				EditMode: false,
+				ModeHideableColumns: [],
+				AllHideableColumns: [{
+					key: "Vendor",
+					text: "Vendor"
+				}, {
+					key: "VItemNo",
+					text: "Vend.Item #"
+				}, {
+					key: "VendDesc",
+					text: "Vendor Name"
+				}, {
+					key: "Desc",
+					text: "Description"
+				}, {
+					key: "Allowance",
+					text: "Allowance"
+				}, {
+					key: "CasePack",
+					text: "Case Pack"
+				}, {
+					key: "LastCaseCost",
+					text: "Last Case Cost"
+				}, {
+					key: "LastCost",
+					text: "Last Unit Cost"
+				}, {
+					key: "LastGM",
+					text: "Last GM %."
+				}, {
+					key: "NewUnitCost",
+					text: "New Unit Cost"
+				}, {
+					key: "NewGM",
+					text: "New GM"
+				}, {
+					key: "NewGMAllow",
+					text: "New GM with All."
+				}],
+				ColumnsHiddenInCreate: ["NewUnitCost", "LastCaseCost", "LastCost", "LastGM"],
+				hiddenColumns: [],
 				FilterInput: {
 					Vendor: "",
 					Mode: 0,
@@ -50,7 +90,7 @@ sap.ui.define([
 			var sPath = jQuery.sap.getModulePath("ingles.mass.cost.mass_cost", "/test/data/masterData.json");
 			var masterDataModel = new JSONModel(sPath);
 			return masterDataModel;
-		},	
+		},
 		getToday: function () {
 			var d = new Date(),
 				month = "" + (d.getMonth() + 1),
@@ -65,7 +105,7 @@ sap.ui.define([
 			}
 
 			return [month, day, year].join("/");
-		}		
+		}
 
 	};
 });

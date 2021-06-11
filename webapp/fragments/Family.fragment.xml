@@ -3,28 +3,23 @@
 		<content>
 			<t:Table rows="{family>/familyinfo}" width="700px" visibleRowCount="{=${family>/familyinfo}.length}" selectionMode="None"
 				class="sapUiTinyMargin" alternateRowColors="true">
-				<!--				<t:toolbar>
-					<Toolbar>
-						<Title id="Ttitle" text="{family>/message}" level="H3"/>
-					</Toolbar>
-				</t:toolbar>-->
 				<t:extension>
-				<OverflowToolbar>
-					<Label id="message" text="{family>/message}" design="Bold"/>
-					<ToolbarSpacer/>
-				</OverflowToolbar>
+					<OverflowToolbar>
+						<Label id="familyID" text="Family ID:{family>/familyID}" design="Bold"/>
+						<ToolbarSpacer/>
+						<Label id="message" text="{family>/message}" design="Bold"/>
+						<ToolbarSpacer/>
+					</OverflowToolbar>
 				</t:extension>
 				<t:columns>
-					<t:Column resizable="true" autoResizable="true" width="100px">
-						<Label text="Parent/Child"/>
-						<t:template>
-							<Text text="{= ${family>IsParent} ? 'Parent' : 'Child' }"/>
-						</t:template>
-					</t:Column>
-					<t:Column resizable="true" autoResizable="true" width="120px">
+					<t:Column resizable="true" autoResizable="true" width="140px">
 						<Label text="Material"/>
 						<t:template>
-							<Text text="{family>Material}"/>
+							<HBox>
+								<core:Icon src="sap-icon://color-fill" class="size1 sapUiTinyMarginTop sapUiTinyMarginEnd"
+									color="{ parts: [{path: 'family>IsParent'}, {path: 'family>Family'}, {path: 'family>Material'}], formatter: '.colorCode' }" visible="true"></core:Icon>
+								<Input value="{family>Material}" editable="false"/>
+							</HBox>
 						</t:template>
 					</t:Column>
 					<t:Column resizable="true" autoResizable="true" width="150px">

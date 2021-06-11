@@ -18,21 +18,12 @@
 		<f:content>
 			<fb:FilterBar considerGroupTitle="true" id="filterbar" search="onSearch" useToolbar="false" showGoButton="true">
 				<fb:filterGroupItems groupTitle="Group1">
-					<fb:FilterGroupItem groupName="G1" name="A" label="Pricing Family" visibleInAdvancedArea="true">
-						<fb:control>
-							<MultiInput value=""/>
-						</fb:control>
-					</fb:FilterGroupItem>
 					<fb:FilterGroupItem groupName="G1" name="B" label="Vendor" visibleInAdvancedArea="true">
 						<fb:control>
-							<!--<MultiInput/>-->
-							<!--<MultiInput id="multiInput" valueHelpRequest=".onVendorValueHelp"></MultiInput>-->
 							<MultiInput name="VendorInput" id="VendorInput" valueHelpRequest=".onVendorValueHelp"
 								tokenUpdate=".tokenUpdate($event, '/FilterInput/Vendor')"></MultiInput>
 						</fb:control>
 					</fb:FilterGroupItem>
-				</fb:filterGroupItems>
-				<fb:filterGroupItems>
 					<fb:FilterGroupItem groupName="G1" name="C" label="Material" visibleInAdvancedArea="true">
 						<fb:control>
 							<MultiInput/>

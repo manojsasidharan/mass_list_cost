@@ -1,4 +1,16 @@
 {	"vendors": [{
+		"vendor": "626",
+		"vendorName": "Budweiser of Asheville",
+		"salesPerson": "Griggs Candler",
+		"telephone": "999999834"
+	},
+	{
+		"vendor": "1011",
+		"vendorName": "FLAGG, INC. -BOAR'S HD",		
+		"salesPerson": "Steve Bernard",
+		"telephone": "999940133"		
+	},
+	{
 		"vendor": "834",
 		"vendorName": "CCBCC-CONA",
 		"salesPerson": "Griggs Candler",

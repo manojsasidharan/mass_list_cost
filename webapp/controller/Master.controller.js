@@ -12,9 +12,10 @@ sap.ui.define([
 	"sap/m/Label",
 	"sap/m/SearchField",
 	"sap/m/Token",
-	"ingles/mass/cost/mass_cost/controller/ValueHelper"	
+	"ingles/mass/cost/mass_cost/controller/ValueHelper",
+	"sap/m/MessageToast"
 ], function (JSONModel, Controller, Filter, FilterOperator, Sorter, MessageBox, UriParameters, compLibrary, typeString, ColumnListItem,
-	Label, SearchField, Token, ValueHelper) {
+	Label, SearchField, Token, ValueHelper, MessageToast) {
 	"use strict";
 
 	return Controller.extend("ingles.mass.cost.mass_cost.controller.Master", {
@@ -22,8 +23,21 @@ sap.ui.define([
 			this.oRouter = this.getOwnerComponent().getRouter();
 			this._bDescendingSort = false;
 			this._oMultiInput = this.getView().byId("VendorInput");
-			// this._oMultiInput.addValidator(this._onMultiInputValidate);
-			this._oMultiInput.setTokens(this._getDefaultTokens());
+			this._oMultiInput.addValidator(function (args) {
+				var vendorList = this.getOwnerComponent().getModel("MasterDataModel").getData().vendors;
+				var vendorData = vendorList.filter(function (obj) {
+					return obj.vendor === args.text;
+				});
+				if (vendorData.length > 0) {
+					return new sap.m.Token({
+						key: args.text,
+						text: vendorData[0].vendorName
+					});
+				} else return null;
+
+			}.bind(this));
+			
+			// this._oMultiInput.setTokens(this._getDefaultTokens());
 			var scPath = jQuery.sap.getModulePath("ingles.mass.cost.mass_cost", "/test/data/columnsModel.json");
 			this.oColModel = new JSONModel(scPath);
 			var sPPath = jQuery.sap.getModulePath("ingles.mass.cost.mass_cost", "/test/data/products.json");
@@ -44,31 +58,10 @@ sap.ui.define([
 			if (value.pricestrategy !== undefined) {
 				this.getOwnerComponent().getModel("query").setProperty("/PriceStrategy", decodeURIComponent(value.pricestrategy));
 				this.getOwnerComponent().getModel("query").setProperty("/PriceType", decodeURIComponent(value.pricetype));
-
-				if (decodeURIComponent(value.pricetype) === "20" & decodeURIComponent(value.pricestrategy) === "001") {
-					this.getOwnerComponent().getModel("query").setProperty("/filename", "closeoutdata.json");
-				} else if (decodeURIComponent(value.pricetype) === "01" & decodeURIComponent(value.pricestrategy) === "001") {
-					this.getOwnerComponent().getModel("query").setProperty("/filename", "data.json");
-				}else if (decodeURIComponent(value.pricetype) === "01" & decodeURIComponent(value.pricestrategy) === "213") {
-					this.getOwnerComponent().getModel("query").setProperty("/filename", "dsdregular.json");
-				}else if (decodeURIComponent(value.pricetype) === "20" & decodeURIComponent(value.pricestrategy) === "201") {
-					this.getOwnerComponent().getModel("query").setProperty("/filename", "dsdclose.json");
-				}
 			}
 
 		},
-		_onMultiInputValidate: function (oArgs) {
-			if (oArgs.suggestionObject) {
-				var oObject = oArgs.suggestionObject.getBindingContext().getObject(),
-					oToken = new Token();
 
-				oToken.setKey(oObject.ProductId);
-				oToken.setText(oObject.Name + " (" + oObject.ProductId + ")");
-				return oToken;
-			}
-
-			return null;
-		},
 		_getDefaultTokens: function () {
 			var oToken1 = new Token({
 				key: "DC10",
@@ -100,7 +93,21 @@ sap.ui.define([
 			} else {
 				this.getOwnerComponent().getModel("query").setProperty("/Mode", "02");
 			}
-
+			
+			if(this.getView().byId("VendorInput").getTokens().length === 0 )
+			{
+				MessageToast.show("Input Vendor");
+				return;
+			}
+			var vendorid = this.getView().byId("VendorInput").getTokens()[0].getKey();
+			var vendors  = this.getOwnerComponent().getModel("MasterDataModel").getProperty("/vendors");
+			var selectedVendor = vendors.filter(function(obj){ return obj.vendor === vendorid; });
+			if(selectedVendor.length > 0)
+			{
+				this.getOwnerComponent().getModel("appControl").setProperty("/vendorid", selectedVendor[0].vendor );
+				this.getOwnerComponent().getModel("appControl").setProperty("/vendorname", selectedVendor[0].vendorName );
+			}
+			
 			this.oRouter.navTo("detail", {
 				layout: "MidColumnFullScreen",
 				product: "95"

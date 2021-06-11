@@ -55,11 +55,11 @@
 							</m:HBox>
 							<m:HBox class="sapUiLargeMarginBegin">
 								<m:Label text="Vendor ID:" design="Bold" wrapping="true" />
-								<m:ObjectStatus text=" DC10" class="sapUiSmallMarginBegin  sapUiTinyMarginBottom"/>
+								<m:ObjectStatus text="{appControl>/vendorid}" class="sapUiSmallMarginBegin  sapUiTinyMarginBottom"/>
 							</m:HBox>
 							<m:HBox class="sapUiLargeMarginBegin">
 								<m:Label text="Vendor Name:" design="Bold" wrapping="true" />
-								<m:ObjectStatus text=" Ingles DC" class="sapUiSmallMarginBegin  sapUiTinyMarginBottom"/>
+								<m:ObjectStatus text="{appControl>/vendorname}" class="sapUiSmallMarginBegin  sapUiTinyMarginBottom"/>
 							</m:HBox>
 						</layout:HorizontalLayout>
 						<layout:HorizontalLayout class="sapUiSmallMarginTop">

@@ -1,31 +1,43 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout" xmlns:table="sap.ui.table">
-	<table:Table id="Table" selectionMode="MultiToggle" visibleRowCount="10" alternateRowColors="true" fixedColumnCount="2" rowActionCount="1"
-		columnResize="itemColumnResize" columnMove="itemColumnMove">
+	<table:Table id="Table" selectionMode="MultiToggle" visibleRowCount="{=${/Data}.length}" alternateRowColors="true" fixedColumnCount="2"
+		rowActionCount="1" columnResize="itemColumnResize" columnMove="itemColumnMove">
 		<table:noData></table:noData>
 		<table:toolbar>
 			<Toolbar>
 				<Title id="Ttitle" text="Retail Pricing (9)"/>
 				<ToolbarSpacer/>
-				<!--<Button id="BCopy" icon="sap-icon://copy" text="Copy" type="Transparent" visible="false"/>-->
-				<Button id="AddRowBtn" icon="sap-icon://add" tooltip="Add new rows" press="onAddRows" visible="{appControl>/FilterInput/Edit}"></Button>				
-				<Button id="DelRowBtn" icon="sap-icon://less" tooltip="Delete" visible="{appControl>/FilterInput/Edit}" press="onDeletePress"/> 
-				<Button id="ShowFamilyBtn" icon="sap-icon://SAP-icons-TNT/bdd-diagram" tooltip="Display Cost Family" press="showFamilyInfo"/> 
-				<Button id="Treset" icon="sap-icon://synchronize" tooltip="Synchronize Data" press="onSync" width="auto" visible="{=((${query>/Mode} === '01') ? false : true)}"/>	
+				<Label text="Hidden Columns"/>
+				<MultiComboBox id="hiddenColumns" name="hiddenColumns" items="{appControl>/ModeHideableColumns}" width="150px"
+				selectionFinish=".onHideColumnsChange"
+					selectedKeys="{appControl>/hiddenColumns}">
+					<core:Item key="{appControl>key}" text="{appControl>text}"/>
+				</MultiComboBox>
+				<ToolbarSpacer/>
+				<Label text="Case Cost" visible="{appControl>/FilterInput/Edit}"/>
+				<Input id="case" width="100px" textAlign="Right" visible="{appControl>/FilterInput/Edit}"
+					value="{ parts: [ {path: 'appControl>/caseCost'}, {path: 'appControl>/Currency'} ], type: 'sap.ui.model.type.Currency', formatOptions: {showMeasure: false} }"/>
+				<Button text="Apply" press="onApplyMassUpdate" type="Emphasized" icon="sap-icon://arrow-down" visible="{appControl>/FilterInput/Edit}"/>
+				<Button id="AddRowBtn" icon="sap-icon://add" tooltip="Add new rows" press="onAddRows" visible="{appControl>/FilterInput/Edit}"></Button>
+				<Button id="DelRowBtn" icon="sap-icon://less" tooltip="Delete" visible="{appControl>/FilterInput/Edit}" press="onDeletePress"/>
+				<!--<Button id="ShowFamilyBtn" icon="sap-icon://SAP-icons-TNT/bdd-diagram" tooltip="Display Cost Family" press="showFamilyInfo"/> -->
+				<Button id="Treset" icon="sap-icon://synchronize" tooltip="Synchronize Data" press="onSync" width="auto"
+					visible="{=(((${query>/Mode} === '01') || ${appControl>/FilterInput/Edit} === false ) ? false : true)}"/>
 			</Toolbar>
 		</table:toolbar>
 		<table:rowSettingsTemplate>
 			<table:RowSettings highlight="{statusIcon}"/>
 		</table:rowSettingsTemplate>
 		<table:columns>
-			<table:Column name="Material" width="9rem" filterProperty="Material" sortProperty="Material" tooltip="Material">
+			<table:Column name="Material" width="10rem" filterProperty="Material" sortProperty="Material" tooltip="Material">
 				<Label text="Material"/>
 				<table:template>
 					<HBox>
-						<core:Icon src="sap-icon://color-fill" class="size1 sapUiTinyMarginTop sapUiTinyMarginEnd" 
-						color="{ parts: [{path: 'IsParent'}, {path: 'Family'}, {path: 'Material'}],	formatter: '.colorCode'	}"
-						visible="true"></core:Icon>
-						<Input value="{Material}" editable="{ parts: [{path: 'appControl>/FilterInput/Edit'}, {path: 'IsNew'}],	formatter: '.editability' }"
-						submit="onMaterialInput"/>
+						<core:Icon src="sap-icon://color-fill" class="size1 sapUiTinyMarginTop sapUiTinyMarginEnd"
+							color="{ parts: [{path: 'IsParent'}, {path: 'Family'}, {path: 'Material'}], formatter: '.colorCode' }" visible="true"></core:Icon>
+						<Input value="{Material}" editable="{ parts: [{path: 'appControl>/FilterInput/Edit'}, {path: 'IsNew'}], formatter: '.editability' }"
+							submit="onMaterialInput"/>
+						<Button icon="sap-icon://SAP-icons-TNT/bdd-diagram" tooltip="Display Cost Family" press="showFamilyInfo"
+							visible="{= ${Family} !== '' ? true : false }"/>
 						<!--<Text text="{Material}" wrapping="false"/>-->
 					</HBox>
 				</table:template>
@@ -33,97 +45,118 @@
 			<table:Column name="UPC" width="8rem" sortProperty="UPC" filterProperty="UPC" tooltip="UPC">
 				<Label text="UPC"/>
 				<table:template>
-						<Input value="{UPC}" editable="{ parts: [{path: 'appControl>/FilterInput/Edit'}, {path: 'IsNew'}],	formatter: '.editability' }"/>
+					<Input value="{UPC}" editable="{ parts: [{path: 'appControl>/FilterInput/Edit'}, {path: 'IsNew'}], formatter: '.editability' }"/>
 					<!--<Text text="{LocationCode}" wrapping="false"/>-->
 				</table:template>
 			</table:Column>
-			<table:Column name="Description" sortProperty="Description" filterProperty="Description" tooltip="Description">
+			<table:Column name="Desc" sortProperty="Description" filterProperty="Description" tooltip="Description"
+			visible="{ parts: [{path: 'query>/Mode'}, {path: 'i18n>Desc'} ], formatter: '.showColumn' }">
 				<Label text="Description"/>
 				<table:template>
 					<Text text="{Description}" wrapping="false"/>
 				</table:template>
 			</table:Column>
-			<table:Column name="Vendor" width="5rem" tooltip="Vendor" hAlign="Center">
+			<table:Column name="VItemNo" width="5rem" tooltip="Vendor item #" hAlign="Center"
+			visible="{ parts: [{path: 'query>/Mode'}, {path: 'i18n>VItemNo'} ], formatter: '.showColumn' }">
+				<Label text="Vitem #" wrapping="true"/>
+				<table:template>
+					<Text text="{Vendor_item}" wrapping="false"/>
+				</table:template>
+			</table:Column>
+			<table:Column name="Vendor" width="5rem" tooltip="Vendor" hAlign="Center"
+			visible="{ parts: [{path: 'query>/Mode'}, {path: 'i18n>Vendor'} ], formatter: '.showColumn' }">
 				<Label text="Vendor #" wrapping="true"/>
 				<table:template>
 					<Text text="{Vendor}" wrapping="false"/>
 				</table:template>
 			</table:Column>
-			<table:Column name="Vendor_desc" width="10rem" tooltip="Vendor Name">
+			<table:Column name="VendDesc" width="10rem" tooltip="Vendor Name"
+			visible="{ parts: [{path: 'query>/Mode'}, {path: 'i18n>VendDesc'} ], formatter: '.showColumn' }">
 				<Label text="Vendor Name" wrapping="false"/>
 				<table:template>
 					<Text text="{Vendor_desc}" wrapping="false"/>
 				</table:template>
-			</table:Column>		
-			<table:Column name="curr_retail" width="7rem" tooltip="Current Retail" hAlign="Right" >
+			</table:Column>
+			<table:Column name="CurrRetail" width="7rem" tooltip="Current Retail" hAlign="Right">
 				<Label text="Current Retail" wrapping="true"/>
 				<table:template>
-					<Text text="{RetailPrice}" wrapping="false" />
-				</table:template>
-			</table:Column>			
-			<table:Column name="Allowance" width="6rem" tooltip="Allowance" hAlign="Right">
-				<Label text="Allowance" wrapping="true" />
-				<table:template>
-					<Text text="{Allowance}" wrapping="false"  />
+					<Text
+						text="{ parts: [ {path: 'RetailPrice'}, {path: 'appControl>/Currency'} ], type: 'sap.ui.model.type.Currency', formatOptions: {showMeasure: false} }"
+						wrapping="false"/>
 				</table:template>
 			</table:Column>
-			<table:Column name="Last_Cost" width="7rem" tooltip="Last Cost" hAlign="Right" visible="{=((${query>/Mode} === '01') ? false : true)}">
+			<table:Column name="Allowance" width="6rem" tooltip="Allowance" hAlign="Right">
+				<Label text="Allowance" wrapping="true"/>
+				<table:template>
+					<Text
+						text="{ parts: [ {path: 'Allowance'}, {path: 'appControl>/Currency'} ], type: 'sap.ui.model.type.Currency', formatOptions: {showMeasure: false} }"
+						wrapping="false"/>
+				</table:template>
+			</table:Column>
+			<table:Column name="CasePack" width="6rem" tooltip="Case Pack" hAlign="Right">
+				<Label text="Case Pack" wrapping="true"/>
+				<table:template>
+					<Text text="{CasePack}" wrapping="false"/>
+				</table:template>
+			</table:Column>
+			<table:Column name="LastCost" width="7rem" tooltip="Last Cost" hAlign="Right" visible="{=((${query>/Mode} === '01') ? false : true)}">
 				<Label text="Last Unit Cost" wrapping="true"/>
 				<table:template>
-					<Text text="{effcost}" wrapping="false"  textAlign="Right" />
+					<Text
+						text="{ parts: [ {path: 'UnitCost'}, {path: 'appControl>/Currency'} ], type: 'sap.ui.model.type.Currency', formatOptions: {showMeasure: false} }"
+						wrapping="false" textAlign="Right"/>
 				</table:template>
 			</table:Column>
-			<table:Column name="curr_gp" width="7rem" tooltip="Current GP" hAlign="Right" visible="{=((${query>/Mode} === '01') ? false : true)}">
-				<Label text="Current GM %" wrapping="true"/>
+			<table:Column name="LastGM" width="7rem" tooltip="Current GP" hAlign="Right" visible="{=((${query>/Mode} === '01') ? false : true)}">
+				<Label text="Last GM %" wrapping="true"/>
 				<table:template>
-					<Text text="{Margin}" wrapping="false" />
+					<Text
+						text="{ parts: [ {path: 'Margin'}, {path: 'appControl>/Currency'} ], type: 'sap.ui.model.type.Currency', formatOptions: {showMeasure: false} }"
+						wrapping="false"/>
+				</table:template>
+			</table:Column>
+			<table:Column name="LastCaseCost" width="7rem" tooltip="Last Cost" hAlign="Right" visible="{=((${query>/Mode} === '01') ? false : true)}">
+				<Label text="Last Case Cost" wrapping="true"/>
+				<table:template>
+					<Text
+						text="{ parts: [ {path: 'CaseCost'}, {path: 'appControl>/Currency'} ], type: 'sap.ui.model.type.Currency', formatOptions: {showMeasure: false} }"
+						wrapping="false" textAlign="Right"/>
 				</table:template>
 			</table:Column>
 			<table:Column name="Cost" width="8rem" tooltip="New Cost">
-				<Label text="New Cost"/>
+				<Label text="New Case Cost"/>
 				<table:template>
 					<HBox>
-						<Input value="{
-							parts: [
-								{path: 'New_Cost'},
-								{path: 'appControl>/Currency'}
-							],
-							type: 'sap.ui.model.type.Currency',
-							formatOptions: {showMeasure: false}
-						}" 
-						editable="{appControl>/FilterInput/Edit}"
-						textAlign = "Right"
-						liveChange="livecalculate"/>
-						<Button icon="sap-icon://reset" class="size1 sapUiTinyMarginBegin" press="onreset"/>
+						<Input
+							value="{ parts: [ {path: 'NewCaseCost'}, {path: 'appControl>/Currency'} ], type: 'sap.ui.model.type.Currency', formatOptions: {showMeasure: false} }"
+							editable="{appControl>/FilterInput/Edit}" textAlign="Right" valueState="{= (${NewCaseCost} !== ${CaseCost})? 'Information' : 'None' }"
+							valueStateText="{=(${NewCaseCost} !== ${CaseCost})? 'Edited' : '' }" submit="onEditCaseCost"/>
+						<Button icon="sap-icon://reset" class="size1 sapUiTinyMarginBegin" press="onResetCaseCost"/>
 					</HBox>
 				</table:template>
 			</table:Column>
-			<table:Column name="new_gp" width="6rem" tooltip="New GP" hAlign="Right">
+			<table:Column name="NewUnitCost" width="7rem" tooltip="Last Cost" hAlign="Right" visible="{=((${query>/Mode} === '01') ? false : true)}">
+				<Label text="New Unit Cost" wrapping="true"/>
+				<table:template>
+					<Text
+						text="{ parts: [ {path: 'NewUnitCost'}, {path: 'appControl>/Currency'} ], type: 'sap.ui.model.type.Currency', formatOptions: {showMeasure: false} }"
+						wrapping="false" textAlign="Right"/>
+				</table:template>
+			</table:Column>
+			<table:Column name="NewGM" width="6rem" tooltip="New GP" hAlign="Right">
 				<Label text="New GM %" wrapping="true"/>
 				<table:template>
-					<Text text="{gm}" wrapping="false" />
+					<Text text="{newgm}" wrapping="false"/>
 				</table:template>
 			</table:Column>
-			<table:Column name="new_allow" width="6rem" tooltip="GM % with allowance" hAlign="Right">
+			<table:Column name="NewGMAllow" width="6rem" tooltip="GM % with allowance" hAlign="Right">
 				<Label text="GM % w/ Allowance" wrapping="true"/>
 				<table:template>
-					<Text text="{gmallow}" wrapping="false" />
-				</table:template>
-			</table:Column>
-			<table:Column name="Unit_sell" width="6rem" tooltip="Unit Sell" visible="false" hAlign="Right">
-				<Label text="Unit Sell"/>
-				<table:template>
-					<Text text="{Unit_sell}" wrapping="false"  />
-				</table:template>
-			</table:Column>
-			<table:Column name="Multiplier" width="6rem" tooltip="Multiplier" visible="false" hAlign="Right">
-				<Label text="Multiplier"/>
-				<table:template>
-					<Text text="{Multiplier}" wrapping="false"  />
+					<Text text="{newgmallow}" wrapping="false"/>
 				</table:template>
 			</table:Column>
 		</table:columns>
-<!--		<table:rowActionTemplate>
+		<!--		<table:rowActionTemplate>
 			<table:RowAction>
 				<table:RowActionItem type="Delete" text="Delete" press="onDeletePress"></table:RowActionItem>
 			</table:RowAction>

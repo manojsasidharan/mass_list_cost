@@ -46,6 +46,195 @@ sap.ui.define([
 				});
 			}, this);
 		},
+
+		_onProductMatched: function (oEvent) {
+			var appModel = this.getView().getModel("appControl");
+			var queryModel = this.getOwnerComponent().getModel("query");
+
+			if (queryModel.getProperty("/PriceFamily") != undefined) {
+				var selection = queryModel.getProperty("/PriceFamily").getKey();
+			}
+			var mode = this.getOwnerComponent().getModel("query").getProperty("/Mode");
+
+			var file = "FamilyData.json"; //this.getOwnerComponent().getModel("query").getProperty("/filename");
+			if (mode === "02") {
+				appModel.setProperty("/FilterInput/Edit", false);
+				var conditionTable = this.getView().byId("Table");
+				var sPath = jQuery.sap.getModulePath("ingles.mass.cost.mass_cost", "/test/data/" + file);
+				var fileModel = new JSONModel(sPath);
+				fileModel.attachRequestCompleted(function () {
+					var vendorid = appModel.getProperty("/vendorid");
+					var aRecords = fileModel.getData().Data;
+					var sRecords = aRecords.filter(function (obj) {
+						return obj.Vendor === vendorid;
+					});
+					this.getView().setModel(new JSONModel({
+						Data: sRecords
+					}));
+					conditionTable.bindRows("/Data");
+					this.getView().byId("Ttitle").setText("Cost Maintenance (" + sRecords.length + ")");
+					this.onfirstdisplay();
+				}.bind(this));
+
+			} else {
+				appModel.setProperty("/FilterInput/Edit", true);
+				conditionTable = this.getView().byId("Table");
+				sPath = jQuery.sap.getModulePath("ingles.mass.cost.mass_cost", "/test/data/createdata.json");
+				var attModel = new JSONModel(sPath);
+				this.getView().setModel(attModel);
+				conditionTable.bindRows("/Data");
+				attModel.refresh();
+				this.getView().byId("Ttitle").setText("Cost Maintenance (" + 0 + ")");
+				this.getView().byId("Table").setVisibleRowCount(9);
+				this.geteditrows(0, 9);
+			}
+
+			this.setHideableColumns();
+
+		},
+		onfirstdisplay: function (oEvent) {
+			this.onEditAction();
+			var that = this;
+			setTimeout(function () {
+				that.firstcalculate();
+			}, 1000);
+		},
+		onEditAction: function (oEvent) {
+			this.getView().byId("RB1").setEnabled(true);
+			this.getView().byId("RB2").setEnabled(true);
+			this.getView().byId("Bactive").setVisible(true);
+			this.getView().byId("Bsave").setVisible(true);
+			this.getView().byId("UploadCollection").setUploadButtonInvisible(false);
+			this.getView().byId("UploadCollection").setUploadEnabled(true);
+		},
+
+		firstcalculate: function () {
+			var oModel = this.getView().getModel();
+			for (var i = 0; i < oModel.getData().Data.length; i++) {
+				this.calculateRow(oModel, true, "", "/Data/" + i);
+			}
+		},
+
+		calculateRow: function (oModel, DefaultNewCaseCost, NewCaseCost, rowPath) {
+			var tableData = oModel.getProperty(rowPath);
+			var lRetailPrice = 0;
+			var lNewCaseCost = 0;
+			var lCasePack = 0;
+			var lAllowance = 0;
+			var lGM = 0,
+				lGMallow = 0;
+
+			if (NewCaseCost !== "") {
+				tableData.NewCaseCost = NewCaseCost;
+				tableData.NewUnitCost = NewCaseCost / tableData.CasePack;
+			} else if (DefaultNewCaseCost) {
+				tableData.NewUnitCost = tableData.UnitCost;
+				tableData.NewCaseCost = tableData.UnitCost * tableData.CasePack;
+				tableData.NewCaseCost = tableData.NewCaseCost.toFixed(2);
+				tableData.CaseCost = tableData.UnitCost * tableData.CasePack;
+				tableData.CaseCost = tableData.CaseCost.toFixed(2);
+				lGM = ((parseFloat(tableData.RetailPrice, 2) - parseFloat(tableData.UnitCost)) / parseFloat(tableData.RetailPrice, 2)) * 100;
+				tableData.Margin = isNaN(lGM) ? 0 : lGM.toFixed(2);
+			}
+
+			lRetailPrice = tableData.RetailPrice;
+			lNewCaseCost = tableData.NewCaseCost;
+			lCasePack = tableData.CasePack;
+			lAllowance = tableData.Allowance;
+
+			lGM = ((parseFloat(lRetailPrice, 2) - (parseFloat(lNewCaseCost, 2) / parseFloat(lCasePack, 2))) / parseFloat(lRetailPrice, 2)) *
+				100;
+			tableData.newgm = isNaN(lGM) ? 0 : lGM.toFixed(2);
+
+			lGMallow = ((parseFloat(lRetailPrice, 2) - (parseFloat(lNewCaseCost, 2) / parseFloat(lCasePack, 2)) + parseFloat(lAllowance, 2)) /
+				parseFloat(lRetailPrice, 2)) * 100;
+			tableData.newgmallow = isNaN(lGMallow) ? 0 : lGMallow.toFixed(2);
+
+			oModel.setProperty(rowPath, tableData);
+
+		},
+
+		onApplyMassUpdate: function (oEvent) {
+			var oModel = this.getView().getModel();
+			var oTable = this.getView().byId("Table");
+			var selectedIndices = oTable.getSelectedIndices();
+			var value = this.getView().byId("case").getValue();
+			if (value === "") {
+				MessageToast.show("Enter valid Case Cost");
+				return;
+			}
+			if (selectedIndices.length === 0) {
+				MessageToast.show("Select rows to mass apply case cost ");
+				return;
+			}
+
+			selectedIndices.forEach(function (index) {
+				this.calculateRow(oModel, false, value, "/Data/" + index);
+			}.bind(this));
+
+			selectedIndices.forEach(function (index) {
+				oTable.removeSelectionInterval(index, 1);
+			});
+		},
+
+		calculate: function (row, oTable) {
+
+			var oModel = this.getView().getModel(),
+				sPath = "/Data/" + row;
+			var cost = oModel.getProperty(sPath + "/New_Cost");
+			var allow = oModel.getProperty(sPath + "/Allowance");
+			var retailprice = oModel.getProperty(sPath + "/RetailPrice");
+
+			var GM = ((parseFloat(retailprice, 2) - parseFloat(cost, 2)) / parseFloat(retailprice, 2)) * 100;
+			var finalGM = isNaN(GM) ? 0 : GM.toFixed(2);
+
+			var GMwithAllow = ((parseFloat(retailprice, 2) - parseFloat(cost, 2) + parseFloat(allow, 2)) / parseFloat(retailprice, 2)) * 100;
+			var finalGMwithAllow = isNaN(GMwithAllow) ? 0 : GMwithAllow.toFixed(2);
+
+			if (oTable.getRows()[0].getCells()[0].getItems()[1].getValue() !== "") {
+				// oTable.getRows()[row].getCells()[8].setText(finalGM);
+				// oTable.getRows()[row].getCells()[9].setText(finalGMwithAllow);
+				oModel.setProperty(sPath + "/gm", finalGM);
+				oModel.setProperty(sPath + "/gmallow", finalGMwithAllow);
+			}
+
+		},
+
+		// calculate: function (NewCost) { //from Cost Assoc
+		// 	var oTable = this.getView().byId("Table");
+		// 	var model = oTable.getModel();
+		// 	var rowPath = "";
+		// 	var tableData = model.getProperty("/Data");
+		// 	var RetailPrice = 0,
+		// 		CaseCost = 0,
+		// 		CasePack = 1,
+		// 		Allowance = 0,
+		// 		GM = 0,
+		// 		GMallow = 0;
+		// 	for (var i = 0; i < tableData.length; i++) {
+
+		// 		if (NewCost !== "")
+		// 			tableData[i].New_Cost = NewCost;
+
+		// 		RetailPrice = tableData[i].RetailPrice;
+		// 		CaseCost = tableData[i].New_Cost;
+		// 		CasePack = tableData[i].Case_Pack;
+		// 		Allowance = tableData[i].Allowance;
+
+		// 		GM = ((parseFloat(RetailPrice, 2) - (parseFloat(CaseCost, 2) / parseFloat(CasePack, 2))) / parseFloat(RetailPrice, 2)) * 100;
+		// 		tableData[i].gm = isNaN(GM) ? 0 : GM.toFixed(2);
+
+		// 		GMallow = ((parseFloat(RetailPrice, 2) - (parseFloat(CaseCost, 2) / parseFloat(CasePack, 2)) + parseFloat(Allowance, 2)) /
+		// 			parseFloat(RetailPrice, 2)) * 100;
+		// 		tableData[i].gmallow = isNaN(GMallow) ? 0 : GMallow.toFixed(2);
+
+		// 		rowPath = "/Data/" + i;
+		// 		model.setProperty(rowPath, tableData[i]);
+		// 	}
+		// 	model.refresh();
+
+		// },
+
 		handleItemPress: function (oEvent) {
 			var oNextUIState = this.getOwnerComponent().getHelper().getNextUIState(2),
 				supplierPath = oEvent.getSource().getBindingContext("products").getPath(),
@@ -92,75 +281,50 @@ sap.ui.define([
 
 		},
 		onSync: function (oEvent) {
-			if (this.getOwnerComponent().getModel("query").getProperty("/PriceFamily") != undefined) {
-				var selection = this.getOwnerComponent().getModel("query").getProperty("/PriceFamily").getKey();
+
+			var oModel = this.getView().getModel();
+			for (var i = 0; i < oModel.getData().Data.length; i++) {
+				this.calculateRow(oModel, true, "", "/Data/" + i);
 			}
 
-			var mode = this.getOwnerComponent().getModel("query").getProperty("/Mode");
-			var file = this.getOwnerComponent().getModel("query").getProperty("/filename");
-			if (mode === "02") {
-				var conditionTable = this.getView().byId("Table");
-				var sPath = jQuery.sap.getModulePath("ingles.mass.cost.mass_cost", "/test/data/" + file);
-				var attModel = new JSONModel(sPath);
-				attModel.setDefaultBindingMode("OneWay");
-				this.getView().setModel(attModel);
-				conditionTable.bindRows("/Data");
-				this.getView().byId("Ttitle").setText("Cost Maintenance ( 9 )");
-				this.getView().getModel().refresh();
-				conditionTable.rerender();
-				conditionTable.setVisibleRowCount(9);
-			} else {
+			// if (this.getOwnerComponent().getModel("query").getProperty("/PriceFamily") != undefined) {
+			// 	var selection = this.getOwnerComponent().getModel("query").getProperty("/PriceFamily").getKey();
+			// }
 
-				conditionTable = this.getView().byId("Table");
-				sPath = jQuery.sap.getModulePath("ingles.mass.cost.mass_cost", "/test/data/createdata.json");
-				attModel = new JSONModel(sPath);
-				attModel.setDefaultBindingMode("OneWay");
-				this.getView().setModel(attModel);
-				conditionTable.bindRows("/Data");
-				attModel.refresh();
-				this.getView().byId("Table").rerender();
-				this.getView().byId("Ttitle").setText("Cost Maintenance (" + 0 + ")");
-				this.getView().byId("Table").setVisibleRowCount(9);
-				this.geteditrows(0, 9);
-			}
-			var that = this;
-			setTimeout(function () {
-				that.firstcalculate();
-			}, 1000);
+			// var mode = this.getOwnerComponent().getModel("query").getProperty("/Mode");
+			// var file = this.getOwnerComponent().getModel("query").getProperty("/filename");
+			// if (mode === "02") {
+			// 	var conditionTable = this.getView().byId("Table");
+			// 	var sPath = jQuery.sap.getModulePath("ingles.mass.cost.mass_cost", "/test/data/" + file);
+			// 	var attModel = new JSONModel(sPath);
+			// 	attModel.setDefaultBindingMode("OneWay");
+			// 	this.getView().setModel(attModel);
+			// 	conditionTable.bindRows("/Data");
+			// 	this.getView().byId("Ttitle").setText("Cost Maintenance ( 9 )");
+			// 	this.getView().getModel().refresh();
+			// 	conditionTable.rerender();
+			// 	conditionTable.setVisibleRowCount(9);
+			// } else {
+
+			// 	conditionTable = this.getView().byId("Table");
+			// 	sPath = jQuery.sap.getModulePath("ingles.mass.cost.mass_cost", "/test/data/createdata.json");
+			// 	attModel = new JSONModel(sPath);
+			// 	attModel.setDefaultBindingMode("OneWay");
+			// 	this.getView().setModel(attModel);
+			// 	conditionTable.bindRows("/Data");
+			// 	attModel.refresh();
+			// 	this.getView().byId("Table").rerender();
+			// 	this.getView().byId("Ttitle").setText("Cost Maintenance (" + 0 + ")");
+			// 	this.getView().byId("Table").setVisibleRowCount(9);
+			// 	this.geteditrows(0, 9);
+			// }
+			// var that = this;
+			// setTimeout(function () {
+			// 	that.firstcalculate();
+			// }, 1000);
 
 		},
-		_onProductMatched: function (oEvent) {
-			if (this.getOwnerComponent().getModel("query").getProperty("/PriceFamily") != undefined) {
-				var selection = this.getOwnerComponent().getModel("query").getProperty("/PriceFamily").getKey();
-			}
-			var mode = this.getOwnerComponent().getModel("query").getProperty("/Mode");
-			var file = "FamilyData.json"; //this.getOwnerComponent().getModel("query").getProperty("/filename");
-			if (mode === "02") {
-				this.getView().getModel("appControl").setProperty("/FilterInput/Edit", false);
-				var conditionTable = this.getView().byId("Table");
-				var sPath = jQuery.sap.getModulePath("ingles.mass.cost.mass_cost", "/test/data/" + file);
-				var attModel = new JSONModel(sPath);
-				attModel.attachRequestCompleted(function () {
-					this.getView().byId("Ttitle").setText("Cost Maintenance (" + attModel.getData().Data.length + ")");
-					this.onfirstdisplay();
-				}.bind(this));
-				this.getView().setModel(attModel);
-				conditionTable.bindRows("/Data");
 
-			} else {
-				this.getView().getModel("appControl").setProperty("/FilterInput/Edit", true);
-				conditionTable = this.getView().byId("Table");
-				sPath = jQuery.sap.getModulePath("ingles.mass.cost.mass_cost", "/test/data/createdata.json");
-				attModel = new JSONModel(sPath);
-				this.getView().setModel(attModel);
-				conditionTable.bindRows("/Data");
-				attModel.refresh();
-				this.getView().byId("Ttitle").setText("Cost Maintenance (" + 0 + ")");
-				this.getView().byId("Table").setVisibleRowCount(9);
-				this.geteditrows(0, 9);
-			}
-
-		},
 		onPress: function () {
 
 			var oTable = this.getView().byId("Table");
@@ -177,38 +341,13 @@ sap.ui.define([
 			oTable.rerender();
 
 		},
-		onfirstdisplay: function (oEvent) {
-
-			/*			var oTable = this.getView().byId("Table");
-						var oRows = oTable.getRows();
-						for (var i = 0; i < oRows.length; i++) {
-							// var oCell = oRows[i].getCells()[4];
-							// oCell.setProperty("editable", true);
-							// oCell = oRows[i].getCells()[5];
-							// var oCell.setProperty("editable", true);
-							var oCell = oRows[i].getCells()[0].getItems()[1];
-							oCell.setProperty("editable", false);
-							oCell = oRows[i].getCells()[1];
-							oCell.setProperty("editable", false);
-							// oCell = oRows[i].getCells()[4];
-							// oCell.setProperty("editable", false);
-							oCell = oRows[i].getCells()[7];
-							oCell.getItems()[0].setProperty("editable", false);
-						}*/
-			this.onEditAction();
-
-			var that = this;
-			setTimeout(function () {
-				that.firstcalculate();
-			}, 1000);
-		},
 
 		colorCode: function (isParent, Family, Material) {
 			if (Family !== "") {
-				if (isParent) return "#f58d33"; //Orange
-				else return "#0a6ed1"; //Blue
+				if (isParent) return "#0d6733"; //Dark Green
+				else return "#16ab54"; //Light Green
 			} else if (Material !== "" && Material !== undefined)
-				return "#40916C"; //Green
+				return "#72b5f8"; //Blue
 			else return "";
 		},
 
@@ -220,35 +359,6 @@ sap.ui.define([
 			else return false;
 		},
 
-		firstcalculate: function () {
-			var oTable = this.getView().byId("Table");
-			var oRows = oTable.getRows(),
-				cost, allow, retailprice, GM, finalGM, GMwithAllow, finalGMwithAllow;
-
-			var oModel = this.getView().getModel();
-			var sPath = "";
-
-			for (var i = 0; i < oModel.getData().Data.length; i++) {
-				/*				cost = oRows[i].getCells()[3].getText();
-								retailprice = oRows[i].getCells()[5].getText(); 
-								var allowance = oRows[i].getCells()[4].getText();*/
-
-				sPath = "/Data/" + i;
-				cost = oModel.getProperty(sPath + "/New_Cost");
-				allow = oModel.getProperty(sPath + "/Allowance");
-				retailprice = oModel.getProperty(sPath + "/RetailPrice");
-
-				GM = ((parseFloat(retailprice, 2) - parseFloat(cost, 2)) / parseFloat(retailprice, 2)) * 100;
-				finalGM = isNaN(GM) ? 0 : GM.toFixed(2);
-
-				GMwithAllow = ((parseFloat(retailprice, 2) - parseFloat(cost, 2) + parseFloat(allow, 2)) / parseFloat(retailprice, 2)) * 100;
-				finalGMwithAllow = isNaN(GMwithAllow) ? 0 : GMwithAllow.toFixed(2);
-				oModel.setProperty(sPath + "/gm", finalGM);
-				oModel.setProperty(sPath + "/gmallow", finalGMwithAllow);
-
-			}
-
-		},
 		onEdit: function (oEvent) {
 
 			if (this.getOwnerComponent().getModel("query").getProperty("/PriceFamily") != undefined) {
@@ -339,76 +449,26 @@ sap.ui.define([
 			// }
 			this.onEditAction();
 		},
-		onreset: function (oEvent) {
-			var oModel = this.getView().getModel();
-			var path = oEvent.getSource().getParent().getParent().getBindingContext().getPath();
-			var oldValue = oModel.getProperty(path + "/effcost");
-			oModel.setProperty(path + "/New_Cost", oldValue);
-
+		onResetCaseCost: function (oEvent) {
 			var table = this.getView().byId("Table");
+			var oModel = this.getView().getModel();
 			var oRow = oEvent.getSource().getParent().getParent().getBindingContext().getPath().slice(6);
-			this.calculate(oRow, table);
+			var rowPath = oEvent.getSource().getParent().getParent().getBindingContext().getPath();
+			this.calculateRow(oModel, true, "", rowPath);
 			table.removeSelectionInterval(oRow, oRow);
 		},
-		calculate: function (row, oTable) {
-			// var oRows = oTable.getRows();
-			// var cost = oRows[row].getCells()[3].getText();
-			// var retailprice = oRows[row].getCells()[5].getText(); 
-			// var allowance = oRows[row].getCells()[4].getText();
 
-			var oModel = this.getView().getModel(),
-				sPath = "/Data/" + row;
-			var cost = oModel.getProperty(sPath + "/New_Cost");
-			var allow = oModel.getProperty(sPath + "/Allowance");
-			var retailprice = oModel.getProperty(sPath + "/RetailPrice");
-
-			var GM = ((parseFloat(retailprice, 2) - parseFloat(cost, 2)) / parseFloat(retailprice, 2)) * 100;
-			var finalGM = isNaN(GM) ? 0 : GM.toFixed(2);
-
-			var GMwithAllow = ((parseFloat(retailprice, 2) - parseFloat(cost, 2) + parseFloat(allow, 2)) / parseFloat(retailprice, 2)) * 100;
-			var finalGMwithAllow = isNaN(GMwithAllow) ? 0 : GMwithAllow.toFixed(2);
-
-			if (oTable.getRows()[0].getCells()[0].getItems()[1].getValue() !== "") {
-				// oTable.getRows()[row].getCells()[8].setText(finalGM);
-				// oTable.getRows()[row].getCells()[9].setText(finalGMwithAllow);
-				oModel.setProperty(sPath + "/gm", finalGM);
-				oModel.setProperty(sPath + "/gmallow", finalGMwithAllow);
-			}
-
-		},
-		livecalculate: function (oEvent) {
+		onEditCaseCost: function (oEvent) {
 			var oTable = this.getView().byId("Table");
 			var row = oEvent.getSource().getParent().getParent().getBindingContext().getPath().slice(6);
-			// var oRows = oTable.getRows();
-			// var cost = oRows[row].getCells()[3].getText();
-			// var allow = oRows[row].getCells()[4].getText();
-			// var retailprice = oRows[row].getCells()[7].getItems()[0].getValue();
 			var oModel = this.getView().getModel();
 			var sPath = oEvent.getSource().getBindingContext().getPath();
-			var retailprice = oModel.getProperty(sPath + "/RetailPrice");
-			var allow = oModel.getProperty(sPath + "/Allowance");
-			var cost = oEvent.getSource().getValue(); //oModel.getProperty( sPath + "/Price" );
-
-			var GM = ((parseFloat(retailprice, 2) - parseFloat(cost, 2)) / parseFloat(retailprice, 2)) * 100;
-			var finalGM = isNaN(GM) ? 0 : GM.toFixed(2);
-
-			var GMwithAllow = ((parseFloat(retailprice, 2) - parseFloat(cost, 2) + parseFloat(allow, 2)) / parseFloat(retailprice, 2)) * 100;
-			var finalGMwithAllow = isNaN(GMwithAllow) ? 0 : GMwithAllow.toFixed(2);
-
-			// oTable.getRows()[row].getCells()[8].setText(finalGM);
-			// oTable.getRows()[row].getCells()[9].setText(finalGMwithAllow);
-			oModel.setProperty(sPath + "/gm", finalGM);
-			oModel.setProperty(sPath + "/gmallow", finalGMwithAllow);
-
+			var casecost = oEvent.getSource().getValue();
+			this.calculateRow(oModel, false, casecost, sPath);
 			oTable.addSelectionInterval(row, row);
 		},
-		onDeletePress: function (oEvent) {
-			// var itemModel = this.getView().getModel(),
-			// 	oRow = oEvent.getParameter("row"),
-			// 	sIndex = oRow.getBindingContext().sPath.split("/")[2];
-			// itemModel.getData().Data.splice(sIndex, 1);
-			// itemModel.refresh();
 
+		onDeletePress: function (oEvent) {
 			var itemModel = this.getView().byId("Table").getModel();
 			var oTable = this.getView().byId("Table");
 			var indices = oTable.getSelectedIndices();
@@ -425,16 +485,6 @@ sap.ui.define([
 			itemModel.refresh();
 
 			this.getView().byId("Ttitle").setText("Retail Pricing (" + itemModel.getData().Data.length + ")");
-		},
-		onEditAction: function (oEvent) {
-			// this.getView().byId("DelRowBtn").setVisible(true);
-			// this.getView().byId("AddRowBtn").setVisible(true);
-			this.getView().byId("RB1").setEnabled(true);
-			this.getView().byId("RB2").setEnabled(true);
-			this.getView().byId("Bactive").setVisible(true);
-			this.getView().byId("Bsave").setVisible(true);
-			this.getView().byId("UploadCollection").setUploadButtonInvisible(false);
-			this.getView().byId("UploadCollection").setUploadEnabled(true);
 		},
 
 		onAddDialogSubmit: function (oEvent) {
@@ -795,6 +845,7 @@ sap.ui.define([
 				title: title,
 				message: message,
 				selected: selected,
+				familyID: selected.Family,
 				familyinfo: family,
 				rowPath: rowPath,
 				action: action,
@@ -827,20 +878,23 @@ sap.ui.define([
 			this.FamilyDialog.destroy();
 		},
 
-		showFamilyInfo: function () {
+		showFamilyInfo: function (oEvent) {
+
 			var itemModel = this.getView().byId("Table").getModel();
-			var oTable = this.getView().byId("Table");
-			var indices = oTable.getSelectedIndices();
-			if (indices.length === 0) {
-				MessageToast.show("Select a row");
-				return;
-			}
-			else if (indices.length > 1)
-			{
-				MessageToast.show("Select only one row");
-				return;
-			}
-			var selected = itemModel.getData().Data[indices[0]];
+			var sPath = oEvent.getSource().getParent().getBindingContext().sPath;
+			var selected = itemModel.getProperty(sPath);
+			// var oTable = this.getView().byId("Table");
+			// var indices = oTable.getSelectedIndices();
+			// if (indices.length === 0) {
+			// 	MessageToast.show("Select a row");
+			// 	return;
+			// }
+			// else if (indices.length > 1)
+			// {
+			// 	MessageToast.show("Select only one row");
+			// 	return;
+			// }
+			// var selected = itemModel.getData().Data[indices[0]];
 			if (selected.Family !== "") {
 				var filePath = jQuery.sap.getModulePath("ingles.mass.cost.mass_cost", "/test/data/AllFamily.json");
 				var attModel = new JSONModel(filePath);
@@ -849,10 +903,69 @@ sap.ui.define([
 					var familyinfo = dataArray.filter(function (obj) {
 						return obj.Family.toString() === selected.Family.toString();
 					});
-					if(familyinfo.length > 1)
-					this.openFamilyPopup("DISPLAY", selected, familyinfo, -1);
+					if (familyinfo.length > 1)
+						this.openFamilyPopup("DISPLAY", selected, familyinfo, -1);
 					else MessageToast.show("Selected item is not part of a Cost Family");
 				}.bind(this));
+			}
+		},
+
+		setHideableColumns: function () {
+			var add = true;
+			var mode = this.getView().getModel("query").getProperty("/Mode");
+			var appControlData = this.getOwnerComponent().getModel("appControl").getData();
+			appControlData.ModeHideableColumns = [];
+			appControlData.hiddenColumns = [];
+			for (var i = 0; i < appControlData.AllHideableColumns.length; i++) {
+				add = true;
+				if (mode === "01" && appControlData.ColumnsHiddenInCreate.indexOf(appControlData.AllHideableColumns[i].key) >= 0)
+					add = false;
+				if (add) appControlData.ModeHideableColumns.push(appControlData.AllHideableColumns[i]);
+			}
+			this.getOwnerComponent().getModel("appControl").setData(appControlData);
+		},
+
+		showColumn: function (mode, columnKey) {
+			if (mode === "01") {
+				var ColumnsHiddenInCreate = this.getOwnerComponent().getModel("appControl").getProperty("/ColumnsHiddenInCreate");
+				if (ColumnsHiddenInCreate.indexOf(columnKey) > -1)
+					return false;
+			}
+
+			// var aHiddenColumns = this.getOwnerComponent().getModel("appControl").getProperty("/hiddenColumns");
+
+			// var sHiddenColumn = aHiddenColumns.filter(function (obj) {
+			// 	return obj.getKey() === columnKey;
+			// });
+			// if (sHiddenColumn.length > 0) {
+			// 	return false;
+			// } else return true;
+
+		},
+
+		onHideColumnsChange: function (oEvent) {
+			var mode = this.getView().getModel("query").getProperty("/Mode");
+			var appControlData = this.getOwnerComponent().getModel("appControl").getData();
+			var aColumnsSelected = appControlData.hiddenColumns;
+
+			var aTableColumns = this.getView().byId("Table").getColumns();
+			var toHide = false;
+			for (var i = 0; i < aTableColumns.length; i++) {
+				toHide = false;
+				if (mode === "01" && appControlData.ColumnsHiddenInCreate.indexOf(aTableColumns[i].getName()) >= 0)
+					toHide = true;
+				else {
+					for (var j = 0; j < aColumnsSelected.length; j++) {
+						if (aTableColumns[i].getName() === aColumnsSelected[j]) {
+							toHide = true;
+							break;
+						}
+					}
+				}
+				if (toHide)
+					aTableColumns[i].setVisible(false);
+				else
+					aTableColumns[i].setVisible(true);
 			}
 		}
 
