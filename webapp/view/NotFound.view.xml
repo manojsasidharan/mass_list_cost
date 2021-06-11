@@ -1,5 +1,5 @@
 <mvc:View
-	controllerName="ingles.mass.cost.mass_cost.controller.NotFound"
+	controllerName="Ingles.Mock.MassListCost.controller.NotFound"
 	height="100%"
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns="sap.m"

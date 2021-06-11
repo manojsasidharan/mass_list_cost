@@ -1,4 +1,4 @@
-<mvc:View displayBlock="true" controllerName="ingles.mass.cost.mass_cost.controller.Master" height="100%" xmlns="sap.m" xmlns:f="sap.f"
+<mvc:View displayBlock="true" controllerName="Ingles.Mock.MassListCost.controller.Master" height="100%" xmlns="sap.m" xmlns:f="sap.f"
 	xmlns:vm="sap.ui.comp.variants" xmlns:fb="sap.ui.comp.filterbar" xmlns:mvc="sap.ui.core.mvc" xmlns:core="sap.ui.core">
 	<f:DynamicPage id="dynamicPageId" toggleHeaderOnTitleClick="false">
 		<!-- DynamicPage Title -->

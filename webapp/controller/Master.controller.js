@@ -12,13 +12,13 @@ sap.ui.define([
 	"sap/m/Label",
 	"sap/m/SearchField",
 	"sap/m/Token",
-	"ingles/mass/cost/mass_cost/controller/ValueHelper",
+	"Ingles/Mock/MassListCost/controller/ValueHelper",
 	"sap/m/MessageToast"
 ], function (JSONModel, Controller, Filter, FilterOperator, Sorter, MessageBox, UriParameters, compLibrary, typeString, ColumnListItem,
 	Label, SearchField, Token, ValueHelper, MessageToast) {
 	"use strict";
 
-	return Controller.extend("ingles.mass.cost.mass_cost.controller.Master", {
+	return Controller.extend("Ingles.Mock.MassListCost.controller.Master", {
 		onInit: function () {
 			this.oRouter = this.getOwnerComponent().getRouter();
 			this._bDescendingSort = false;
@@ -38,9 +38,9 @@ sap.ui.define([
 			}.bind(this));
 			
 			// this._oMultiInput.setTokens(this._getDefaultTokens());
-			var scPath = jQuery.sap.getModulePath("ingles.mass.cost.mass_cost", "/test/data/columnsModel.json");
+			var scPath = jQuery.sap.getModulePath("Ingles.Mock.MassListCost", "/test/data/columnsModel.json");
 			this.oColModel = new JSONModel(scPath);
-			var sPPath = jQuery.sap.getModulePath("ingles.mass.cost.mass_cost", "/test/data/products.json");
+			var sPPath = jQuery.sap.getModulePath("Ingles.Mock.MassListCost", "/test/data/products.json");
 			this.oProductsModel = new JSONModel(sPPath);
 			this.getView().setModel(this.oProductsModel);
 
@@ -246,7 +246,7 @@ sap.ui.define([
 				showSearchButton: false
 			});
 
-			this._oValueHelpDialog = sap.ui.xmlfragment("ingles.mass.cost.mass_cost.fragments.ValueHelpDialogFilterbar", this);
+			this._oValueHelpDialog = sap.ui.xmlfragment("Ingles.Mock.MassListCost.fragments.ValueHelpDialogFilterbar", this);
 			this.getView().addDependent(this._oValueHelpDialog);
 
 			this._oValueHelpDialog.setRangeKeyFields([{
@@ -364,7 +364,7 @@ sap.ui.define([
 			});
 
 			this._oValueHelpDialogWithSuggestions = sap.ui.xmlfragment(
-				"ingles.mass.cost.mass_cost.fragments.ValueHelpDialogFilterbarWithSuggestions", this);
+				"Ingles.Mock.MassListCost.fragments.ValueHelpDialogFilterbarWithSuggestions", this);
 			this.getView().addDependent(this._oValueHelpDialogWithSuggestions);
 
 			this._oValueHelpDialogWithSuggestions.setRangeKeyFields([{

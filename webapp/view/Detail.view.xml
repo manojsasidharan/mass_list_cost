@@ -1,4 +1,4 @@
-<mvc:View displayBlock="true" controllerName="ingles.mass.cost.mass_cost.controller.Detail" height="100%" xmlns="sap.uxap"
+<mvc:View displayBlock="true" controllerName="Ingles.Mock.MassListCost.controller.Detail" height="100%" xmlns="sap.uxap"
 	xmlns:mvc="sap.ui.core.mvc" xmlns:m="sap.m" xmlns:f="sap.f" xmlns:form="sap.ui.layout.form" xmlns:layout="sap.ui.layout"
 	xmlns:core="sap.ui.core">
 	<m:Page showHeader="false">
@@ -84,7 +84,7 @@
 						<ObjectPageSubSection>
 							<blocks>
 								<m:VBox>
-									<core:Fragment fragmentName="ingles.mass.cost.mass_cost.fragments.table" type="XML"/>
+									<core:Fragment fragmentName="Ingles.Mock.MassListCost.fragments.table" type="XML"/>
 								</m:VBox>
 							</blocks>
 						</ObjectPageSubSection>

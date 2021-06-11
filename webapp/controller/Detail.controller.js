@@ -18,7 +18,7 @@ sap.ui.define([
 	UploadCollectionParameter, MessageToast) {
 	"use strict";
 
-	return Controller.extend("ingles.mass.cost.mass_cost.controller.Detail", {
+	return Controller.extend("Ingles.Mock.MassListCost.controller.Detail", {
 		onInit: function () {
 
 			var oExitButton = this.getView().byId("exitFullScreenBtn"),
@@ -60,7 +60,7 @@ sap.ui.define([
 			if (mode === "02") {
 				appModel.setProperty("/FilterInput/Edit", false);
 				var conditionTable = this.getView().byId("Table");
-				var sPath = jQuery.sap.getModulePath("ingles.mass.cost.mass_cost", "/test/data/" + file);
+				var sPath = jQuery.sap.getModulePath("Ingles.Mock.MassListCost", "/test/data/" + file);
 				var fileModel = new JSONModel(sPath);
 				fileModel.attachRequestCompleted(function () {
 					var vendorid = appModel.getProperty("/vendorid");
@@ -79,7 +79,7 @@ sap.ui.define([
 			} else {
 				appModel.setProperty("/FilterInput/Edit", true);
 				conditionTable = this.getView().byId("Table");
-				sPath = jQuery.sap.getModulePath("ingles.mass.cost.mass_cost", "/test/data/createdata.json");
+				sPath = jQuery.sap.getModulePath("Ingles.Mock.MassListCost", "/test/data/createdata.json");
 				var attModel = new JSONModel(sPath);
 				this.getView().setModel(attModel);
 				conditionTable.bindRows("/Data");
@@ -295,7 +295,7 @@ sap.ui.define([
 			// var file = this.getOwnerComponent().getModel("query").getProperty("/filename");
 			// if (mode === "02") {
 			// 	var conditionTable = this.getView().byId("Table");
-			// 	var sPath = jQuery.sap.getModulePath("ingles.mass.cost.mass_cost", "/test/data/" + file);
+			// 	var sPath = jQuery.sap.getModulePath("Ingles.Mock.MassListCost", "/test/data/" + file);
 			// 	var attModel = new JSONModel(sPath);
 			// 	attModel.setDefaultBindingMode("OneWay");
 			// 	this.getView().setModel(attModel);
@@ -307,7 +307,7 @@ sap.ui.define([
 			// } else {
 
 			// 	conditionTable = this.getView().byId("Table");
-			// 	sPath = jQuery.sap.getModulePath("ingles.mass.cost.mass_cost", "/test/data/createdata.json");
+			// 	sPath = jQuery.sap.getModulePath("Ingles.Mock.MassListCost", "/test/data/createdata.json");
 			// 	attModel = new JSONModel(sPath);
 			// 	attModel.setDefaultBindingMode("OneWay");
 			// 	this.getView().setModel(attModel);
@@ -538,7 +538,7 @@ sap.ui.define([
 
 		},
 		onAddRows: function (oEvent) {
-			this.addRowsDialog = sap.ui.xmlfragment("ingles.mass.cost.mass_cost.fragments.AddRows", this);
+			this.addRowsDialog = sap.ui.xmlfragment("Ingles.Mock.MassListCost.fragments.AddRows", this);
 
 			//this.getOwnerComponent().getModel("addrow").setData("");
 			this.addRowsDialog.setModel(this.getOwnerComponent().getModel("addrow"));
@@ -788,7 +788,7 @@ sap.ui.define([
 		onMaterialInput: function (oEvent) {
 			var matnr = oEvent.getSource().getValue();
 			var rowPath = oEvent.getSource().getBindingContext().getPath();
-			var filePath = jQuery.sap.getModulePath("ingles.mass.cost.mass_cost", "/test/data/NewData.json");
+			var filePath = jQuery.sap.getModulePath("Ingles.Mock.MassListCost", "/test/data/NewData.json");
 			var attModel = new JSONModel(filePath);
 			attModel.attachRequestCompleted(function () {
 				var dataArray = attModel.getData().Data;
@@ -821,7 +821,7 @@ sap.ui.define([
 		},
 
 		openFamilyPopup: function (action, selected, family, rowPath) {
-			this.FamilyDialog = sap.ui.xmlfragment("ingles.mass.cost.mass_cost.fragments.Family", this);
+			this.FamilyDialog = sap.ui.xmlfragment("Ingles.Mock.MassListCost.fragments.Family", this);
 			var title = "";
 			var message = "";
 			var showContinue = true;
@@ -896,7 +896,7 @@ sap.ui.define([
 			// }
 			// var selected = itemModel.getData().Data[indices[0]];
 			if (selected.Family !== "") {
-				var filePath = jQuery.sap.getModulePath("ingles.mass.cost.mass_cost", "/test/data/AllFamily.json");
+				var filePath = jQuery.sap.getModulePath("Ingles.Mock.MassListCost", "/test/data/AllFamily.json");
 				var attModel = new JSONModel(filePath);
 				attModel.attachRequestCompleted(function () {
 					var dataArray = attModel.getData().Data;

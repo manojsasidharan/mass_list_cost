@@ -1,7 +1,7 @@
 /*global QUnit*/
 
 sap.ui.define([
-	"ingles/mass/cost/mass_cost/controller/View1.controller"
+	"Ingles/Mock/MassListCost/controller/View1.controller"
 ], function (Controller) {
 	"use strict";
 

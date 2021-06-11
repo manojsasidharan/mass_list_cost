@@ -1,7 +1,7 @@
 sap.ui.define([
 	"sap/ui/core/UIComponent",
 	"sap/ui/Device",
-	"ingles/mass/cost/mass_cost/model/models",
+	"Ingles/Mock/MassListCost/model/models",
 	"sap/base/util/UriParameters",
 	"sap/f/library",
 	"sap/f/FlexibleColumnLayoutSemanticHelper",
@@ -10,7 +10,7 @@ sap.ui.define([
 	"use strict";
 	var LayoutType = library.LayoutType;
 
-	var Component = UIComponent.extend("ingles.mass.cost.mass_cost.Component", {
+	var Component = UIComponent.extend("Ingles.Mock.MassListCost.Component", {
 
 		metadata: {
 			manifest: "json"
